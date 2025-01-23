@@ -31,14 +31,12 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-.content {
-  #min-width: 100%;
-}
-
 .src{
   background-color: var(--nord-1); /* Polar Night */
 }
-.outline-2 {
+
+.navbar-ul {
+    z-index: 10000;  
 }
 
 /* 
