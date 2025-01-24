@@ -1,0 +1,5 @@
+#+INCLUDE: "./assets/components/header.org"
+#+INCLUDE: "./assets/components/navbar.org"
+
+* My blog
+#+HTML: <a href="blogs/dg-from-scratch-the-mesh.html">DG from scratch - the mesh</a></li>
