@@ -1,5 +1,3 @@
-#+INCLUDE: "../assets/components/header.org"
-#+INCLUDE: "../assets/components/navbar.org"
 #+TITLE: Go Van Go - Discontinuous Galerkin method from scratch: the mesh
 
 * DG From scratch: the mesh

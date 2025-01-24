@@ -1,6 +1,3 @@
-#+INCLUDE: "./assets/components/header.org"
-#+TITLE: Go Van Go: the home page
-
 * Website in progress 
 patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long?  
 patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long? patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long?  

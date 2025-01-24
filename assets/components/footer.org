@@ -1,5 +1,0 @@
-#+HTML: </article>
-#+BEGIN_footer
-my footer: go van go!
-#+END_footer
-
