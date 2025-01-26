@@ -18,7 +18,7 @@
 	 :recursive t
 	 :base-directory "~/writing/govango/org/"
 	 :publishing-function org-html-publish-to-html
-	 :base-extension "org"
+ 	 :base-extension "org"
 	 :publishing-directory "~/writing/govango/"
 	 :headline-levels 4
 	 :auto-preamble t
@@ -30,3 +30,4 @@
 ;; Generate the site output
 ;;(org-publish-all t)
 #+END_SRC
+
