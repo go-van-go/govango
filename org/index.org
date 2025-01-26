@@ -1,26 +1,17 @@
 * Website in progress 
-patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long?  
-patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long? patience - the capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset. but will it get so long?  
+Soon there will be lots of fun code
 #+BEGIN_SRC python
 def myfunc(x):
     x + 3
     return x
 #+END_SRC
 
-more testing
-
+And exciting math
 \begin{equation*}
-  \frac{x + 35}{n + 2} 
-\end{equation*}
-
-\begin{equation*}
-  \frac{x + 302309235}{n + 2!\mu \epsilon} 
+\frac{34 + x^2}{93 - y^2} 
 \end{equation*}
 
 * Wait so what happens now?
-I wanna see
-I wanna know
-* One more for the homies
-you know what it is
+Wait patiently
 
 

@@ -1,2 +1,6 @@
-* Blog
-#+HTML: <a href="blogs/dg-from-scratch-the-mesh.html">DG from scratch - the mesh</a></li>
+* Blogs
+#+BEGIN_EXPORT html
+<ul class="blog-list">
+<li><a class="blog-links" href="/blogs/dg-from-scratch-the-mesh.html">DG from scratch - the mesh</a></li>
+</ul>
+#+END_EXPORT
