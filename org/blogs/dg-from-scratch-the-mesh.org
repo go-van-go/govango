@@ -1,4 +1,5 @@
-#+TITLE: Go Van Go - Discontinuous Galerkin method from scratch: the mesh
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: Discontinuous Galerkin method from scratch: the mesh
 
 * DG From scratch: the mesh
 #+BEGIN_QUOTE
