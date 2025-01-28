@@ -3,4 +3,3 @@
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css2?family=roboto+serif:wght@200&display=swap" rel="stylesheet">
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 #+HTML_HEAD: <script src="../assets/js/navbar.js"></script>
-#+HTML_HEAD: <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
