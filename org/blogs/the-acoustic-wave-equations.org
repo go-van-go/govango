@@ -1,0 +1,4 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: The acoustic wave equations
+#+SUBTITLE: Fromulated for ultrasound imaging problems
+The acoustic wave equations... (coming soon)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-28 Tue 15:26 -->
+<!-- 2025-01-28 Tue 16:31 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>What is a computational mesh?</title>
@@ -234,16 +234,49 @@
 <ul class="org-ul">
 <li>What is a computational mesh?<br></li>
 <li>How do we make a mathematical representation of a 3D bodies?<br></li>
+<li>What are the types of computational meshes?<br></li>
 <li>Why triangles?<br></li>
 </ul>
 </blockquote>
+</div>
+</div>
+<div id="outline-container-orgb58e9e5" class="outline-2">
+<h2 id="orgb58e9e5">What is a computational mesh?</h2>
+<div class="outline-text-2" id="text-orgb58e9e5">
+<p>
+A computational mesh is a tool mathematicians use to represent real objects in mathematical simulations.<br>
+</p>
+
+<p>
+The idea is to take our real world domain, and break it up into small pieces (called <b>cells</b>), and solve our equations on each of these cells. This allows us to simplify our problem so we can quickly solve it in each cell. As the size of these cells goes to zero, the error for our simulation will also tend to zero.<br>
+</p>
+
+<p>
+For our purposes we want to understand <b>3D tetrahedral unstructured meshes</b>. These types of meshes allow for cutting edge numerical simulations on complex 3D geometry.<br>
+</p>
+
+<p>
+Tetrahedral means each cell in our mesh is a tetrahedron (a figure enclosed by four triangles)<br>
+</p>
+
+<p>
+Unstructured means each cell can be a different size and shape.<br>
+</p>
 </div>
 </div>
 <div id="outline-container-org8f589aa" class="outline-2">
 <h2 id="org8f589aa">What constitutes an object?</h2>
 <div class="outline-text-2" id="text-org8f589aa">
 <p>
-Our goal is to describe a 3D object in such a way that we can use that description in a numerical simulation.<br>
+Consider for a moment that you want to solve a partial differential equation (for example <a href="./the-acoustic-wave-equations.html">the acoustic wave equations</a>), and you want to do it over some object (the brain for example). How do you mathematically represent that object?<br>
+</p>
+
+<p>
+Our goal is to run a numerical simulation in 3D. To achieve that goal, we need to be able to describe the shape of a 3D object mathematically.<br>
+</p>
+
+<p>
+For a perfect sphere that is simple.<br>
 </p>
 </div>
 </div>

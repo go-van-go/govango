@@ -90,6 +90,7 @@ h2 {
 
 h3 {
   font-weight: 300;
+  font-size: 1.33em;
   color: var(--nord-6);
   padding-top: 1em;
   border-bottom: solid 1px var(--nord-3);
@@ -99,11 +100,12 @@ p {
   padding-top: 1em;
   font-size: 1.2em;
   font-weight: 300;
+  line-height: 1.5em;
 }
 
 li {
   padding-top: 1em;
-  font-size: 1.2em;
+  font-size: 1em;
   font-weight: 300;
 }
 /* *******************************************************
@@ -136,6 +138,9 @@ blockquote p {
 }
 blockquote ul {
   list-style-position: inside; /* Ensures the bullets stay inside the blockquote */
+}
+blockquote ul li {
+  font-size: 1.3em;
 }
 /* *******************************************************
  *                     NAV BAR 
@@ -229,6 +234,10 @@ a:hover {
   transition: .5s;
 }
 
+a {
+  color: var(--nord-10)
+}
+
 /* *******************************************************
  *                     LISTS 
  * *******************************************************/
@@ -250,10 +259,14 @@ ul {
 
 /* Link styling */
 .blog-links {
-  color: var(--nord-4);
+  color: var(--nord-10);
   text-decoration: none; /* Ensures links remain without underline */
   font-size: 1.4em;
   font-weight: 200;
+}
+
+.blog-links:hover {
+  color: var(--nord-4);
 }
 
 /* *******************************************************

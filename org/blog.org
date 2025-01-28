@@ -3,5 +3,6 @@
 #+BEGIN_EXPORT html
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>
+<li><a class="blog-links" href="/blogs/the-acoustic-wave-equations.html">The acoustic wave equations</a></li>
 </ul>
 #+END_EXPORT
