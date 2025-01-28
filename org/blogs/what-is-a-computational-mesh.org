@@ -1,11 +1,11 @@
 #+SETUPFILE: ./blog-styles.org
 #+TITLE: What is a computational mesh?
-#+SUBTITLE: Applications of computational mesh in finite element analysis
+#+SUBTITLE: The computational mesh in finite element analysis
 #+BEGIN_EXPORT html
 <div id="three-js-container"></div>
 #+END_EXPORT
 
-*Interactive* 3D mesh created with gmsh. *Click and drag* to move around the mesh.
+*Interactive* 3D mesh created with gmsh. _*Click and drag*_ to move around the mesh.
 
 #+BEGIN_EXPORT html
 <script type="module" src="/assets/js/simple-mesh.js"></script>

@@ -36,7 +36,9 @@ loader.load(
   function (geometry) {
     const material = new THREE.MeshStandardMaterial({
       wireframe: true, // Enable wireframe
-      color: 0xd8dee9,
+      //color: 0xd8dee9,
+      //color: 0xa3be8c,
+      color: 0x8fbcbb,
       wireframeLinewidth: 1,
     });
     const mesh = new THREE.Mesh(geometry, material);

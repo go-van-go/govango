@@ -1,15 +1,21 @@
 * Website in progress 
 Soon there will be lots of fun code
 #+BEGIN_SRC python
-def myfunc(x):
-    x + 3
-    return x
+import matplotlib.pyplot as plt
+import random
+
+x, y = [0], [0]
+
+for _ in range(1000):
+    angle = random.uniform(0, 2 * 3.14159)
+    x.append(x[-1] + 0.5 * cos(angle))
+    y.append(y[-1] + 0.5 * sin(angle))
 #+END_SRC
 
 And exciting math
 \begin{equation*}
-\frac{34 + x^2}{93 - y^2} 
+G_{\mu\nu} + \Lambda g_{\mu\nu} = \frac{8\pi G}{c^4} T_{\mu\nu}
 \end{equation*}
 
-* Wait so what happens now?
+* Wait... so what happens now?
 Wait patiently

@@ -66,31 +66,45 @@ body {
 h1 {
   padding-top: 0.5em;
   font-weight: 200;
-  color: var(--nord-7);
+  color: var(--nord-5);
   font-size: 3em;
   width:100%;
 }
 .subtitle {
   width:100%;
-  color: var(--nord-4);
+  color: var(--nord-5);
   font-style:italic;
-  font-weight: 100;
+  font-weight: 200;
   font-size: 0.6em;
-  border-bottom: solid 1px var(--nord-7);
+  border-bottom: solid 1px var(--nord-13);
 }
 
 h2 {
   font-weight: 200;
+  font-size: 1.66em;
   color: var(--nord-6);
   padding-top: 1em;
   border-bottom: solid 1px var(--nord-13);
 }
 
-p {
+h3 {
+  font-weight: 300;
+  color: var(--nord-6);
   padding-top: 1em;
-  font-size: 18px;
+  border-bottom: solid 1px var(--nord-3);
 }
 
+p {
+  padding-top: 1em;
+  font-size: 1.2em;
+  font-weight: 300;
+}
+
+li {
+  padding-top: 1em;
+  font-size: 1.2em;
+  font-weight: 300;
+}
 /* *******************************************************
  *                     SOURCE(SRC) BLOCKS 
  * *******************************************************/
@@ -106,10 +120,10 @@ p {
  *                     QUOTE BLOCKS 
  * *******************************************************/
 blockquote{
-  width:75%;
-  margin:50px auto;
+  width:86%;
+  margin:30px auto 20px auto;
   font-style:italic;
-  padding:1em 30px 1.6em 75px;
+  padding:1em 30px 1.6em 35px;
   border-left:8px solid var(--nord-13) ;
   line-height:1;
   position: relative;
@@ -237,6 +251,8 @@ ul {
 .blog-links {
   color: var(--nord-4);
   text-decoration: none; /* Ensures links remain without underline */
+  font-size: 1.4em;
+  font-weight: 200;
 }
 
 /* *******************************************************
@@ -252,6 +268,7 @@ canvas {
 #three-js-container {
   width: 100%;
   height: 500px;
+  margin: 1em 0 0 0;
 }
 /* *******************************************************
  *                     FOOTER 

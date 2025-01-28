@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-28 Tue 14:48 -->
+<!-- 2025-01-28 Tue 15:18 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -195,7 +195,7 @@
     <link href="https://fonts.googleapis.com/css2?family=roboto+serif:wght@200&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="./assets/css/styles.css" />
     <script type="module" src="./assets/js/navbar.js"></script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+    <script type="module" src="/src/main.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -257,9 +257,15 @@
 Soon there will be lots of fun code<br>
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">myfunc</span>(x):
-    x + 3
-    <span style="color: #81A1C1;">return</span> x
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> matplotlib.pyplot <span style="color: #81A1C1;">as</span> plt
+<span style="color: #81A1C1;">import</span> random
+
+<span style="color: #D8DEE9;">x</span>, <span style="color: #D8DEE9;">y</span> = [0], [0]
+
+<span style="color: #81A1C1;">for</span> _ <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1000):
+    <span style="color: #D8DEE9;">angle</span> = random.uniform(0, 2 * 3.14159)
+    x.append(x[-1] + 0.5 * cos(angle))
+    y.append(y[-1] + 0.5 * sin(angle))
 </pre>
 </div>
 
@@ -267,13 +273,13 @@ Soon there will be lots of fun code<br>
 And exciting math<br>
 </p>
 \begin{equation*}
-\frac{34 + x^2}{93 - y^2} 
+G_{\mu\nu} + \Lambda g_{\mu\nu} = \frac{8\pi G}{c^4} T_{\mu\nu}
 \end{equation*}
 </div>
 </div>
-<div id="outline-container-org110eaf2" class="outline-2">
-<h2 id="org110eaf2">Wait so what happens now?</h2>
-<div class="outline-text-2" id="text-org110eaf2">
+<div id="outline-container-org4eb0cbd" class="outline-2">
+<h2 id="org4eb0cbd">Wait&#x2026; so what happens now?</h2>
+<div class="outline-text-2" id="text-org4eb0cbd">
 <p>
 Wait patiently<br>
 </p>
