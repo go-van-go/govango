@@ -313,6 +313,9 @@ footer {
   canvas {
     height: 50vw !important;
   }
+  #three-js-container {
+    height: 50vw !important;
+  }
 }
 
 /* *******************************************************
