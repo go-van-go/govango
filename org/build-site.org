@@ -4,7 +4,7 @@
 
 (setq org-html-validation-link nil            ;; Don't show validation link
   org-html-head-include-scripts nil       ;; Use our own scripts
-  org-html-head-include-default-style t;; Use our own styles
+  org-html-head-include-default-style t ;; Use our own styles
   org-html-head "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css\"/> 
     <link href=\"https://fonts.googleapis.com/css2?family=roboto:wght@400;500;700&display=swap\" rel=\"stylesheet\">
     <link href=\"https://fonts.googleapis.com/css2?family=roboto+serif:wght@200&display=swap\" rel=\"stylesheet\">
