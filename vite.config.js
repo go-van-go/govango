@@ -8,7 +8,7 @@ module.exports = defineConfig({
         about: './about.html',
         contact: './contact.html',
         blog: './blog.html',
-        blogs: './blogs/',
+        blog1: './blogs/what-is-a-computational-mesh.html',
         // ...
         // List all files you want in your build
       }
