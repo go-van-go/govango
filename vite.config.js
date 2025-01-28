@@ -1,17 +1,19 @@
-const { defineConfig } = require('vite')
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vite'
 
-module.exports = defineConfig({
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: './index.html',
-        about: './about.html',
-        contact: './contact.html',
-        blog: './blog.html',
-        blog1: './blogs/what-is-a-computational-mesh.html',
-        // ...
-        // List all files you want in your build
-      }
-    }
-  }
+        main: resolve(__dirname, 'index.html'),
+        contact: resolve(__dirname, 'contact.html'),
+        about: resolve(__dirname, 'about.html'),
+        blog: resolve(__dirname, 'blog.html'),
+        blog1: resolve(__dirname, 'blogs/what-is-a-computational-mesh.html'),
+      },
+    },
+  },
 })
