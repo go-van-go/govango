@@ -31,7 +31,7 @@ controls.enableDamping = true;
 
 const loader = new STLLoader();
 loader.load(
-    '../assets/media/gltf/simple-mesh.stl', // Update the path if necessary
+    '../../public/media/gltf/simple-mesh.stl', // Update the path if necessary
     function (geometry) {
         const material = new THREE.MeshStandardMaterial({
             wireframe: true, // Enable wireframe
