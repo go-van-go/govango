@@ -94,7 +94,7 @@ p {
  *                     QUOTE BLOCKS 
  * *******************************************************/
 blockquote{
-  width:66%;
+  width:75%;
   margin:50px auto;
   font-style:italic;
   padding:2em 30px 2em 75px;
@@ -227,6 +227,19 @@ ul {
   text-decoration: none; /* Ensures links remain without underline */
 }
 
+/* *******************************************************
+ *                     MODEL VIEWERS 
+ * *******************************************************/
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border: 1px solid var(--nord-3)
+}
+
+#three-js-container {
+  width: 100%;
+  height: 500px;
+}
 /* *******************************************************
  *                     FOOTER 
  * *******************************************************/

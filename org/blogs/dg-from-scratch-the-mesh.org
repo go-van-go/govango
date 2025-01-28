@@ -1,5 +1,8 @@
 #+SETUPFILE: ./blog-styles.org
 #+TITLE: Discontinuous Galerkin method from scratch: the mesh
+#+BEGIN_EXPORT html
+<model-viewer alt="A simple mesh of a 3D cube" src="./visualization.gltf" shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
+#+END_EXPORT
 
 * DG From scratch: the mesh
 #+BEGIN_QUOTE
@@ -7,3 +10,5 @@ What we will learn:
 - What is a mesh?
 - How do you use Gmsh?
 #+END_QUOTE
+
+* 

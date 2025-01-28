@@ -13,12 +13,24 @@
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          venvDir = ".venv";
-          packages = with pkgs; [ python311 ] ++
-            (with pkgs.python311Packages; [
-              pip
-              venvShellHook
-            ]);
+            packages = [
+            # General packages
+	      pkgs.nodejs
+	      pkgs.typescript-language-server
+              # pkgs.clangd
+              #  # Python packages
+              (pkgs.python311.withPackages (python-pkgs: [
+              #  # packages for formatting/ IDE
+                python-pkgs.python-lsp-server
+              #  # packages for code
+              #  python-pkgs.gmsh
+              #  python-pkgs.pyvista
+              #  python-pkgs.matplotlib
+              #  python-pkgs.numpy
+              #  python-pkgs.firedrake
+              ]))
+            ];
+
 	  shellHook = ''
             export VIRTUAL_ENV="Go Van Go"
 	  '';

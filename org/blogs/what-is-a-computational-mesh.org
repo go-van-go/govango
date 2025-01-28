@@ -1,0 +1,13 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: What is a computational mesh?
+#+SUBTITLE: Applications of computational mesh in finite element analysis
+#+BEGIN_EXPORT html
+<div id="three-js-container"></div>
+#+END_EXPORT
+
+#+BEGIN_EXPORT html
+<script type="module" src="./main.js"></script>
+#+END_EXPORT
+
+* What constitutes an object?
+Our goal is to describe a 3D object in such a way that we can use that description in a numerical simulation.
