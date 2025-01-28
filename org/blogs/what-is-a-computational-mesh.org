@@ -5,9 +5,18 @@
 <div id="three-js-container"></div>
 #+END_EXPORT
 
+*Interactive* 3D mesh created with gmsh. *Click and drag* to move around the mesh.
+
 #+BEGIN_EXPORT html
 <script type="module" src="/assets/js/simple-mesh.js"></script>
 #+END_EXPORT
+
+* What will we learn?
+#+BEGIN_QUOTE
+- What is a computational mesh?
+- How do we make a mathematical representation of a 3D bodies?
+- Why triangles?
+#+END_QUOTE
 
 * What constitutes an object?
 Our goal is to describe a 3D object in such a way that we can use that description in a numerical simulation.

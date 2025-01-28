@@ -36,8 +36,8 @@
 body {
   background-color: var(--nord-0); /* Polar Night */
   color: var(--nord-5); /* Snow Storm for text */
-  font-family: 'Roboto Serif', serif;
-  /* font-family: 'Roboto', sans-serif; */
+  /*font-family: 'Roboto Serif', serif;*/
+  font-family: 'Roboto', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -65,13 +65,25 @@ body {
  * *******************************************************/
 h1 {
   padding-top: 0.5em;
-  font-weight: normal;
+  font-weight: 200;
+  color: var(--nord-7);
+  font-size: 3em;
+  width:100%;
+}
+.subtitle {
+  width:100%;
+  color: var(--nord-4);
+  font-style:italic;
+  font-weight: 100;
+  font-size: 0.6em;
+  border-bottom: solid 1px var(--nord-7);
 }
 
 h2 {
+  font-weight: 200;
+  color: var(--nord-6);
   padding-top: 1em;
-  border-bottom: solid 1px var(--nord-1);
-  font-weight: normal;
+  border-bottom: solid 1px var(--nord-13);
 }
 
 p {
@@ -97,8 +109,8 @@ blockquote{
   width:75%;
   margin:50px auto;
   font-style:italic;
-  padding:2em 30px 2em 75px;
-  border-left:8px solid var(--nord-9) ;
+  padding:1em 30px 1.6em 75px;
+  border-left:8px solid var(--nord-13) ;
   line-height:1;
   position: relative;
   background:var(--nord-2);
@@ -123,7 +135,7 @@ blockquote ul {
 nav {
   position: sticky;
   top: 0;
-  background: var(--nord-3); /* Aurora */
+  background: var(--nord-1);/* Aurora */
   height: 80px;
   width: 100vw;
   z-index: 99999999999;  
@@ -140,7 +152,7 @@ label.logo {
 
 /* Anchor tag inside the logo */
 label.logo a {
-  color: var(--nord-6); /* Snow Storm */
+  color: var(--nord-13); /* Snow Storm */
   text-decoration: none; /* Remove underline */
 }
 
@@ -233,7 +245,8 @@ ul {
 canvas {
   width: 100% !important;
   height: 100% !important;
-  border: 1px solid var(--nord-3)
+  border: 1px solid var(--nord-3);
+  cursor: grab;
 }
 
 #three-js-container {
@@ -253,6 +266,8 @@ canvas {
 
 footer {
   padding: 1em 0 1em 0;
+  color: var(--nord-13);
+  font-style:italic;
 }
 
 /* *******************************************************
