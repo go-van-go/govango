@@ -17,6 +17,7 @@
             # General packages
 	      pkgs.nodejs
 	      pkgs.typescript-language-server
+	      pkgs.wrangler
               # pkgs.clangd
               #  # Python packages
               (pkgs.python311.withPackages (python-pkgs: [
