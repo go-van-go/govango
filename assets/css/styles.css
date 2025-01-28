@@ -310,6 +310,9 @@ footer {
     background: none;
     color: var(--nord-10); /* Aurora text color */
   }
+  canvas {
+    height: 50vw !important;
+  }
 }
 
 /* *******************************************************
