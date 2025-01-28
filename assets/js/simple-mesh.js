@@ -13,8 +13,8 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(1, 1, 1.7); // Place camera closer to the center of the mesh
-camera.lookAt(0.5, 0.5, 0.5); // Aim the camera at the center of the mesh
+camera.position.set(0.5, 0.9, 0.9); // Place camera closer to the center of the mesh
+camera.lookAt(0.9, 0, 0.5); // Aim the camera at the center of the mesh
 
 const renderer = new THREE.WebGLRenderer();
 // Modify this line to target a specific div by its id

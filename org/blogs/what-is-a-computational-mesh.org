@@ -6,7 +6,7 @@
 #+END_EXPORT
 
 #+BEGIN_EXPORT html
-<script type="module" src="./main.js"></script>
+<script type="module" src="/assets/js/simple-mesh.js"></script>
 #+END_EXPORT
 
 * What constitutes an object?
