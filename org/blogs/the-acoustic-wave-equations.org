@@ -24,6 +24,7 @@ Lets looks at some common forms of the acoustic wave equation you might find in 
 - 3D anisotropic variable density visco-acoustic wave equation [cite:@guasch2020full].
 - Nonlinear acoustic wave equation in two dimensions given by the lossy Westervelt equation [cite:@shultzman2022nonlinear]
 - The acoustic wave equation as described by a conservative system [cite:@vandekerckhove2016simulation]
+- Ultrasound modeled with a linear elastic wave equation [cite:@hirsch2017magnetic]
 
 Each of these papers is conceptualizing the acoustic wave propagation problem using a different model. Models can include things like elasticity, porosity, viscosity, dissipation, anisotropy, non-linearity, and more.
 
