@@ -1,4 +1,37 @@
 #+SETUPFILE: ./blog-styles.org
-#+TITLE: The acoustic wave equations
-#+SUBTITLE: Fromulated for ultrasound imaging problems
-The acoustic wave equations... (coming soon)
+#+bibliography: references.bib
+#+cite_export: csl ./citation-style.csl
+
+#+TITLE: The acoustic wave equation
+#+SUBTITLE: and how to pick the right form for ultrasound imaging. 
+#+HTML: <div class="hero-latex">
+\begin{equation*}
+\nabla^2 p - \frac{1}{c^2} \frac{\delta^2 p}{\delta t^2} = 0
+\end{equation*}
+#+HTML:</div>
+Where $p$ is the acoustic pressure and $c$ is the wavespeed. This is the /general/ form of the linear acoustic wave equation ... but maybe not the one we care about.
+
+* Article Motivation
+#+BEGIN_QUOTE
+- What is the general form of the acoustic wave equation?
+- Why are there so many forms of the acoustic wave equation?
+- What is the most common wave equation used to model 3D ultrasound waves?
+- What is the best equation for me?
+#+END_QUOTE
+
+* Why are there so many forms?
+Lets looks at some common forms of the acoustic wave equation you might find in research:
+- 3D anisotropic variable density visco-acoustic wave equation [cite:@guasch2020full].
+- Nonlinear acoustic wave equation in two dimensions given by the lossy Westervelt equation [cite:@shultzman2022nonlinear]
+- The acoustic wave equation as described by a conservative system [cite:@vandekerckhove2016simulation]
+
+Each of these papers is conceptualizing the acoustic wave propagation problem using a different model. Models can include things like elasticity, porosity, viscosity, dissipation, anisotropy, non-linearity, and more.
+
+* Example Equations
+** 3D anisotropic variable density visco-acoustic wave equation
+** Elastic wave equation
+** Westervelt equation
+** Khokhlov-Zabolotskaya-Kuznetsov (KZK) equation
+
+* References
+#+print_bibliography:

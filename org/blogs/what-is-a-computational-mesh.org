@@ -11,7 +11,7 @@
 <script type="module" src="/assets/js/simple-mesh.js"></script>
 #+END_EXPORT
 
-* What will we learn?
+* Article Motivation 
 #+BEGIN_QUOTE
 - What is a computational mesh?
 - How do we make a mathematical representation of a 3D bodies?

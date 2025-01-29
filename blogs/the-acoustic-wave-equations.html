@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-28 Tue 16:31 -->
+<!-- 2025-01-29 Wed 14:55 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The acoustic wave equations</title>
+<title>The acoustic wave equation</title>
 <meta name="generator" content="Org Mode" />
 <style type="text/css">
   #content { max-width: 60em; margin: auto; }
@@ -194,6 +194,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 <script type="module" src="../assets/js/navbar.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 </head>
 <body>
 <div id="preamble" class="status">
@@ -216,16 +248,90 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">The acoustic wave equations
+<h1 class="title">The acoustic wave equation
 <br>
-<span class="subtitle">Fromulated for ultrasound imaging problems</span>
+<span class="subtitle">and how to pick the right form for ultrasound imaging.</span>
 </h1>
+<div class="hero-latex">
+\begin{equation*}
+\nabla^2 p - \frac{1}{c^2} \frac{\delta^2 p}{\delta t^2} = 0
+\end{equation*}
+</div>
 <p>
-The acoustic wave equations&#x2026; (coming soon)<br>
+Where \(p\) is the acoustic pressure and \(c\) is the wavespeed. This is the <i>general</i> form of the linear acoustic wave equation &#x2026; but maybe not the one we care about.<br>
+</p>
+<div id="outline-container-orgf6ee4d0" class="outline-2">
+<h2 id="orgf6ee4d0">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgf6ee4d0">
+<blockquote>
+<ul class="org-ul">
+<li>What is the general form of the acoustic wave equation?<br></li>
+<li>Why are there so many forms of the acoustic wave equation?<br></li>
+<li>What is the most common wave equation used to model 3D ultrasound waves?<br></li>
+<li>What is the best equation for me?<br></li>
+</ul>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgaeb30d1" class="outline-2">
+<h2 id="orgaeb30d1">Why are there so many forms?</h2>
+<div class="outline-text-2" id="text-orgaeb30d1">
+<p>
+Lets looks at some common forms of the acoustic wave equation you might find in research:<br>
+</p>
+<ul class="org-ul">
+<li>3D anisotropic variable density visco-acoustic wave equation [<a href="#citeproc_bib_item_1">1</a>].<br></li>
+<li>Nonlinear acoustic wave equation in two dimensions given by the lossy Westervelt equation [<a href="#citeproc_bib_item_2">2</a>]<br></li>
+<li>The acoustic wave equation as described by a conservative system [<a href="#citeproc_bib_item_3">3</a>]<br></li>
+</ul>
+
+<p>
+Each of these papers is conceptualizing the acoustic wave propagation problem using a different model. Models can include things like elasticity, porosity, viscosity, dissipation, anisotropy, non-linearity, and more.<br>
 </p>
 </div>
+</div>
+<div id="outline-container-orgade4769" class="outline-2">
+<h2 id="orgade4769">Example Equations</h2>
+<div class="outline-text-2" id="text-orgade4769">
+</div>
+<div id="outline-container-org25c1dfb" class="outline-3">
+<h3 id="org25c1dfb">3D anisotropic variable density visco-acoustic wave equation</h3>
+</div>
+<div id="outline-container-org7b8f60f" class="outline-3">
+<h3 id="org7b8f60f">Elastic wave equation</h3>
+</div>
+<div id="outline-container-org091d4b9" class="outline-3">
+<h3 id="org091d4b9">Westervelt equation</h3>
+</div>
+<div id="outline-container-org1ef4d78" class="outline-3">
+<h3 id="org1ef4d78">Khokhlov-Zabolotskaya-Kuznetsov (KZK) equation</h3>
+</div>
+</div>
+<div id="outline-container-org5829d68" class="outline-2">
+<h2 id="org5829d68">References</h2>
+<div class="outline-text-2" id="text-org5829d68">
+<style>.csl-left-margin{float: left; padding-right: 0em;}
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Guasch L, Calderón Agudo O, Tang MX, Nachev P, Warner M. <a href="https://doi.org/10.1038/s41746-020-0240-8">Full-waveform inversion imaging of the human brain</a>. Npj digital medicine. 2020;3:28. </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_2"></a>
+    <div class="csl-left-margin">2. </div><div class="csl-right-inline">Shultzman A, Eldar YC. <a href="https://doi.org/10.1109/TCI.2022.3208515">Nonlinear waveform inversion for quantitative ultrasound</a>. Ieee transactions on computational imaging. 2022;8:893–904. </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_3"></a>
+    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Vandekerckhove S. Simulation of wave propagation problems for automated characterisation of material parameters [Internet]. 2016. Available from: <a href="https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0">https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&#38;tab=LIRIAS&#38;search_scope=lirias_profile&#38;vid=32KUL_KUL:Lirias&#38;offset=0</a></div>
+  </div>
+</div>
+</div>
+</div>
+</div>
 <div id="postamble" class="status">
-<footer>Go Van Go!</footer>
+<footer>
+   <p>Go Van Go!</p>
+   <a href="https://github.com/go-van-go" target="_blank" rel="noopener noreferrer">
+     <i class="fa fa-github githubfooter"></i>
+   </a>
+</footer>
 </div>
 </body>
 </html>

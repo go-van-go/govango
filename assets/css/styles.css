@@ -105,7 +105,7 @@ p {
 
 li {
   padding-top: 1em;
-  font-size: 1em;
+  font-size: 1.2em;
   font-weight: 300;
 }
 /* *******************************************************
@@ -126,11 +126,12 @@ blockquote{
   width:86%;
   margin:30px auto 20px auto;
   font-style:italic;
-  padding:1em 30px 1.6em 35px;
+  padding:1em 20px 1.6em 0;
   border-left:8px solid var(--nord-13) ;
   line-height:1;
   position: relative;
   background:var(--nord-2);
+  border-radius: 10px;
 }
 
 blockquote p {
@@ -141,6 +142,17 @@ blockquote ul {
 }
 blockquote ul li {
   font-size: 1.3em;
+}
+
+/* *******************************************************
+ *                     HERO LATEX 
+ * *******************************************************/
+.hero-latex {
+  font-size: 2em;
+  background-color: var(--nord-1);
+  width: 100%;
+  padding: 1em 0 1em 0;
+  border-radius: 10px;
 }
 /* *******************************************************
  *                     NAV BAR 
@@ -284,6 +296,15 @@ canvas {
   height: 500px;
   margin: 1em 0 0 0;
 }
+
+/* *******************************************************
+ *               REFERENCES / BIBLIOGRAPHY 
+ * *******************************************************/
+.csl-bib-body {
+  font-weight: 200;
+  padding-top: 0.5em;
+}
+
 /* *******************************************************
  *                     FOOTER 
  * *******************************************************/
@@ -292,7 +313,7 @@ canvas {
   width: 100vw;
   background: var(--nord-1); /* Aurora */
   text-align: center;
-  margin-top: 1em;
+  margin-top: 2.5em;
 }
 
 footer {
@@ -301,6 +322,10 @@ footer {
   font-style:italic;
 }
 
+.githubfooter {
+  color: #272C36;
+  font-size: 2em;
+}
 /* *******************************************************
  *                   MEDIA: TABLET  
  * *******************************************************/
@@ -308,7 +333,7 @@ footer {
   blockquote {
     width: 90%;
     margin:20px auto;
-    padding: 1em 10px 1em 20px;
+    padding: 1em 10px 1em 0;
     }
   label.logo {
     padding-left: 30px;
