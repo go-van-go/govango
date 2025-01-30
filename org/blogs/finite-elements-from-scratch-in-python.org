@@ -6,7 +6,7 @@
 #+BEGIN_EXPORT html
 <div id="three-js-container"></div>
 #+END_EXPORT
-*Interactive* 3D mesh of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh. 
+*Interactive* 3D visualization of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh. 
 
 #+BEGIN_EXPORT html
 <script type="module" src="/assets/js/reference-tetrahedron.js"></script>
@@ -20,4 +20,9 @@
 - Code it in python.
 #+END_QUOTE
 
-* What is a finite element
+* What is a finite element?
+Note: were talking about specific elements that are used in finite element analysis (FEA), not the finite element method (FEM) as a whole.
+
+There are two ways to explain finite elements, the simple way and the rigorous mathematical way.
+
+The simple way
