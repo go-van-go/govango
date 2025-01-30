@@ -1,9 +1,8 @@
 #+SETUPFILE: ./blog-styles.org
-#+bibliography: references.bib
-#+cite_export: csl ./citation-style.csl
-
 #+TITLE: The acoustic wave equation
 #+SUBTITLE: and how to pick the right form for ultrasound imaging. 
+#+HTML: <p class="date"><i>last update: Jan 30, 2025</i></p>
+
 #+HTML: <div class="hero-latex">
 \begin{equation*}
 \nabla^2 p - \frac{1}{c^2} \frac{\delta^2 p}{\delta t^2} = 0
@@ -30,9 +29,63 @@ Each of these papers is conceptualizing the acoustic wave propagation problem us
 
 * Example Equations
 ** 3D anisotropic variable density visco-acoustic wave equation
-** Elastic wave equation
+\begin{equation}
+\rho(\mathbf{x}) \frac{\partial^2 p}{\partial t^2} 
+- \nabla \cdot \left( \mathbf{C}(\mathbf{x}) \nabla p \right) 
++ \eta(\mathbf{x}) * \frac{\partial p}{\partial t} 
+= s(\mathbf{x}, t)
+\end{equation}
+- $p=p(x,t)$ is the acoustic pressure,
+- $\rho(x)\rho(x)$ is the spatially varying density,
+- $C(x)C(x)$ is the anisotropic stiffness tensor,
+- $\eta(x)\eta(x)$ represents the intrinsic attenuation mechanism (often modeled via memory variables or convolution with a relaxation kernel),
+- $s(x,t)s(x,t)$ is the source term.
+
+I came across this particular formulation of the acoustic equations in a 2020 paper by Guash, et. al [cite:@guasch2020full]. In this paper the group from Imperial College London and University College London used the model as a part of a full-waveform inversion (FWI) imaging algorithm to image a simulated model of the human brain.
+
+To do this, the group used the [[https://fullwave3d.github.io/][Fullwave3D]] software package from another group at the Imperial College London. This particular package is for seismic imaging, but the group has applied the same model to image the brain. This makes sense in some regards. The brain is also anisotropic in its response to acoustic waves (meaning it has a different response depending on the direction of the wave). The veins of minerals and sheets of sediment found in seismic imaging are somewhat like the layers of tissue and blood vessels in the brain.
+
+However, this code is locked behind a commercial paywall, so I can't see exactly why they chose a viscoacoustic model and not something else. They do point to a 2019 paper [cite:@dasilva2019semiglobal] about FWI for seismic imaging that suggests that the dispersion added by the viscosity makes their model more physically accurate.
+
+*Conclusion*: Pick this model if you work at Imperial College London and you are interested only in linear phenomenon. 
+
 ** Westervelt equation
+\begin{equation}
+\nabla^2 p - \frac{1}{c^2} \frac{\partial^2 p}{\partial t^2} 
++ \frac{\delta}{c^4} \frac{\partial^3 p}{\partial t^3} 
+= \frac{\beta}{\rho c^4} \frac{\partial^2 p^2}{\partial t^2}
+\end{equation}
+
+I found this equation in a paper written by a PhD student who was trying to incorporate nonlinear effects into their FWI algorithm [cite:@shultzman2022nonlinear]. They weren't specifically trying to image the brain here.
+
+This is the first paper I've seen insist that we should incorporate nonlinear effects into our ultrasound imaging model. They cite a 1999 article called /Ultrasonic imaging of the human body/ [cite:@wells1999ultrasonic] that states:
+
+/" Although it is often convenient to assume that the pressure of a wave is proportional to the particle displacement amplitude, this is really only justifiable at small amplitudes. Except at infinitely-small amplitudes, the nonlinear relationship between pressure and density becomes a significant factor... Real tissue possesses frequency-dependent attenuation and is nonlinear and inhomogeneous."/
+
+*Conclusion*: Seems like a pretty good argument for including nonlinear effects.
+
+** Linear acoustic wave equation written as a conservative system of equations
+\begin{equation}
+\begin{aligned}
+    && \frac{1}{K} \frac{\partial p}{\partial t} = -\nabla \cdot \mathbf{v} \\
+    && \rho \frac{\partial \mathbf{v}}{\partial t} = -\nabla p + \mathbf{f} \\
+\end{aligned}
+\end{equation}
+- $p$ is the pressure
+- $\mathbf{v} = (v_1, v_2, v_3)$ is the particle velocity
+- $\rho$ is the mass density
+- $f$ is the applied force
+
+This is a common way to present the linear acoustic equations when you want to use them in a finite volume (FV), finite element (FE), or discontinuous galerkin (DG) algorithm (see [cite:@vandekerckhove2016simulation] [cite:@leveque2004finite]).
+
+The linear acoustic wave equation is a hyperbolic partial differential equation (PDE). This just means that it's solution consists of waves. When solving hyperbolic PDEs, a simple method is to get it into conservative form, then apply the spatial discretization (FV, FE, DG method). This just simplifies the mathematics.
+
+*Conclusion*: use this method if you want to use powerful methods on an unstructured [[./what-is-a-computational-mesh][mesh]], get stuff done fast, and don't care about nonlinearity.
+
+** Elastic wave equation
+
 ** Khokhlov-Zabolotskaya-Kuznetsov (KZK) equation
+TODO
 
 * References
 #+print_bibliography:

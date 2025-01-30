@@ -56,7 +56,6 @@
     pages = {152-154},
     year = {2023},
     month = {03},
-    abstract = {The estimation of the parameters of a mathematical model by data-fitting procedures goes back more than 200 years. Mathematics historians seem to agree to credit C. F. Gauss for the introduction of this idea (Gauss, 2011). In the field of exploration geophysics, Lailly (1983) and Tarantola (1984) were the first to propose the use of data-fitting techniques to estimate model parameters that control the propagation of waves in the subsurface. The concept of full-waveform inversion (FWI) was born.},
     issn = {1070-485X},
     doi = {10.1190/tle42030152.1},
     url = {https://doi.org/10.1190/tle42030152.1},
@@ -72,6 +71,7 @@
   year={1983},
   organization={Philadelphia, Pa}
 }
+
 @article{Gortler2019,
   author = {Görtler, Jochen and Kehlbeck, Rebecca and Deussen, Oliver},
   title = {A Visual Exploration of Gaussian Processes},
@@ -108,12 +108,12 @@
     year={2015}, 
     pages={204–224}} 
 
-@book{LeVeque2011, 
+@book{leveque2004finite, 
     place={Cambridge}, 
     title={Finite volume methods for hyperbolic problems},
     publisher={Cambridge Univ. Press}, 
     author={LeVeque, Randall J.}, 
-    year={2011}} 
+    year={2004}} 
 
 @article{Busto2020, 
     title={High Order Ader Schemes for Continuum Mechanics},
@@ -174,7 +174,6 @@
     pages = {598-612},
     year = {2000},
     month = {10},
-    abstract = {Prestack seismic reflection data contain amplitudes, traveltimes, and moveout information; waveform inversion of such data has the potential to estimate attenuation levels, reflector depths and geometry, and background velocities. However, when inverting reflection data, strong nonlinearities can cause reflectors to be incorrectly imaged and can prevent background velocities from being updated. To successfully recover background velocities, previous authors have resorted to nonlinear, global search inversion techniques.We propose a two-step inversion procedure using local descent methods in which we perform alternate inversions for the reflectors and the background velocities. For our reflector inversion we exploit the efficiency of the back-propagation method when inverting for a large parameter set. For our background velocity inversion we use Newton inverse methods. During the background velocity inversions it is crucial to adaptively depth-stretch the model to preserve the vertical traveltimes. This reduces nonlinearity by largely decoupling the effects of the background velocities and reflectors on the data. Nonlinearity is further reduced by choosing to invert for slownesses and by inverting for a sparse parameter set which is partially defined using geological reflector picks.Applying our approach to shallow seismic data from the North Sea collected over a gas-sand deposit, we demonstrate that the proposed method is able to estimate both the geometry and internal velocity of a significant velocity structure not present in the initial model. Over successive iterations, the use of adaptive depth stretching corrects the pull-down of the base of the gas sand. Vertical background velocity gradients are also resolved. For an insignificant extra cost the acoustic attenuation parameter Q is included in the inversion scheme. The final attenuation tomogram contains realistic values of Q for the expected lithologies and for the effect of partial fluid saturation associated with a shallow bright spot. The attenuation image may also indicate the presence of fracturing.},
     issn = {0016-8033},
     doi = {10.1190/1.1444951},
     url = {https://doi.org/10.1190/1.1444951},
@@ -191,12 +190,13 @@ booktitle={Proceedings of the International Workshop on Medical Ultrasound Tomog
 title = {3D imaging of the breast using full-waveform inversion}
 }
 
-@misc{vandekerckhove2016simulation,
-author = {Vandekerckhove, Steven},
-language = {eng},
-title = {Simulation of wave propagation problems for automated characterisation of material parameters},
-year = {2016-09-28},
-url = {https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0}
+@article{vandekerckhove2016simulation,
+  author = {Vandekerckhove, Steven},
+  language = {eng},
+  title = {Simulation of wave propagation problems for automated characterisation of material parameters},
+  year = {2016-09-28},
+  publisher = {Ku Leuven},
+  doi = {https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0},
 }
 
 @article{Bernard2017,
@@ -252,10 +252,10 @@ doi = {https://doi.org/10.1016/j.jsv.2021.115934},
 url = {https://www.sciencedirect.com/science/article/pii/S0022460X21000067},
 author = {Reza Rashetnia and Mohammad Pour-Ghaz},
 keywords = {Deep learning, Full wave inversion, Inverse problems, Kurganov–Tadmor, Markov chain Monte Carlo, Surrogate model, Wave propagation},
-abstract = {Full Wave Inversion (FWI) imaging scheme has many applications in engineering, geoscience and medical sciences. In this paper, a surrogate deep learning FWI approach is presented to quantify properties of materials using stress waves. Such inverse problems, in general, are ill-posed and nonconvex, especially in cases where the solutions exhibit shocks, heterogeneity and discontinuities. The proposed approach is proven efficient to obtain global minima responses in these cases. This approach is trained based on random sampled sets of material properties and sampled trials around local minima, therefore, it requires a forward simulation can handle high heterogeneity, discontinuities and large gradients. High resolution Kurganov–Tadmor (KT) central finite volume method is used as forward wave propagation operator. Using the proposed framework, material properties of 2D media are quantified for several different situations. The results demonstrate the feasibility of the proposed method for estimating mechanical properties of materials with high accuracy using deep learning approaches.}
 }
+
 @article{Anazodo2023,
-author = {Anazodo, Udunna C. and Ng, Jinggang J. and Ehiogu, Boaz and Obungoloch, Johnes and Fatade, Abiodun and Mutsaerts, Henk J. M. M. and Secca, Mario Forjaz and Diop, Mamadou and Opadele, Abayomi and Alexander, Daniel C. and Dada, Michael O. and Ogbole, Godwin and Nunes, Rita and Figueiredo, Patricia and Figini, Matteo and Aribisala, Benjamin and Awojoyogbe, Bamidele O. and Aduluwa, Harrison and Sprenger, Christian and Wagner, Rachel and Olakunle, Alausa and Romeo, Dominic and Sun, Yusha and Fezeu, Francis and Orunmuyi, Akintunde T. and Geethanath, Sairam and Gulani, Vikas and Nganga, Edward Chege and Adeleke, Sola and Ntobeuko, Ntusi and Minja, Frank J. and Webb, Andrew G. and Asllani, Iris and Dako, Farouk and { the Consortium for Advancement of MRI Education and Research in Africa (CAMERA) }},
+author = {Anazodo, Udunna C. and Ng, Jinggang J. and Ehiogu, Boaz, et. al},
 title = {A framework for advancing sustainable magnetic resonance imaging access in Africa},
 journal = {NMR in Biomedicine},
 volume = {36},
@@ -287,5 +287,33 @@ year = {2023}
   address   = {Weinheim, Germany},
   isbn      = {9783527340088},
   doi       = {10.1002/9783527696017},
-  url       = {https://doi.org/10.1002/9783527696017}
+}
+@article{dasilva2019semiglobal,
+    author = {da Silva, Nuno V. and Yao, Gang and Warner, Michael},
+    title = {Semiglobal viscoacoustic full-waveform inversion},
+    journal = {Geophysics},
+    volume = {84},
+    number = {2},
+    pages = {R271-R293},
+    year = {2019},
+    month = {02},
+    issn = {0016-8033},
+    doi = {10.1190/geo2017-0773.1},
+    url = {https://doi.org/10.1190/geo2017-0773.1},
+    eprint = {https://pubs.geoscienceworld.org/seg/geophysics/article-pdf/84/2/R271/6356110/geo-2017-0773.1.pdf},
+}
+
+@article{wells1999ultrasonic,
+doi = {10.1088/0034-4885/62/5/201},
+url = {https://dx.doi.org/10.1088/0034-4885/62/5/201},
+year = {1999},
+month = {may},
+publisher = {},
+volume = {62},
+number = {5},
+pages = {671},
+author = {P N T Wells},
+title = {Ultrasonic
+imaging of the human body},
+journal = {Reports on Progress in Physics},
 }

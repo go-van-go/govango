@@ -4,7 +4,7 @@
 <!-- 2025-01-30 Thu 12:14 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>What is a computational mesh?</title>
+<title>Finite Elements From Scratch (in Python)</title>
 <meta name="generator" content="Org Mode" />
 <style type="text/css">
   #content { max-width: 60em; margin: auto; }
@@ -217,69 +217,33 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">What is a computational mesh?
+<h1 class="title">Finite Elements From Scratch (in Python)
 <br>
-<span class="subtitle">The computational mesh in finite element analysis</span>
+<span class="subtitle">and how to pick the right one for your simulation</span>
 </h1>
-<div id="three-js-container"></div>
+<p class="date"><i>last update: Jan 30, 2025</i></p>
 
+<div id="three-js-container"></div>
 <p>
-<b>Interactive</b> 3D mesh of the surface of a brain. <span class="underline"><b>Click and drag</b></span> to move around the mesh.<br>
+<b>Interactive</b> 3D mesh of a <b>reference tetrahedron</b> for a finite element mesh. <span class="underline"><b>Click and drag</b></span> to move around the mesh.<br>
 </p>
 
-<script type="module" src="/assets/js/simple-mesh.js"></script>
-<div id="outline-container-org0a6f163" class="outline-2">
-<h2 id="org0a6f163">Article Motivation</h2>
-<div class="outline-text-2" id="text-org0a6f163">
+<script type="module" src="/assets/js/reference-tetrahedron.js"></script>
+<div id="outline-container-orgaa385df" class="outline-2">
+<h2 id="orgaa385df">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgaa385df">
 <blockquote>
 <ul class="org-ul">
-<li>What is a computational mesh?<br></li>
-<li>How do we make a mathematical representation of a 3D bodies?<br></li>
-<li>What are the types of computational meshes?<br></li>
-<li>Why triangles?<br></li>
+<li>What is a finite element?<br></li>
+<li>How does it relate to a mesh?<br></li>
+<li>Which is the right element for my simulation?<br></li>
+<li>Code it in python.<br></li>
 </ul>
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgb58e9e5" class="outline-2">
-<h2 id="orgb58e9e5">What is a computational mesh?</h2>
-<div class="outline-text-2" id="text-orgb58e9e5">
-<p>
-A computational mesh is a tool mathematicians use to represent real objects in mathematical simulations.<br>
-</p>
-
-<p>
-The idea is to take our real world domain, and break it up into small pieces (called <b>cells</b>), and solve our equations on each of these cells. This allows us to simplify our problem so we can quickly solve it in each cell. As the size of these cells goes to zero, the error for our simulation will also tend to zero.<br>
-</p>
-
-<p>
-For our purposes we want to understand <b>3D tetrahedral unstructured meshes</b>. These types of meshes allow for cutting edge numerical simulations on complex 3D geometry.<br>
-</p>
-
-<p>
-Tetrahedral means each cell in our mesh is a tetrahedron (a figure enclosed by four triangles)<br>
-</p>
-
-<p>
-Unstructured means each cell can be a different size and shape.<br>
-</p>
-</div>
-</div>
-<div id="outline-container-org8f589aa" class="outline-2">
-<h2 id="org8f589aa">What constitutes an object?</h2>
-<div class="outline-text-2" id="text-org8f589aa">
-<p>
-Consider for a moment that you want to solve a partial differential equation (for example <a href="./the-acoustic-wave-equations.html">the acoustic wave equations</a>), and you want to do it over some object (the brain for example). How do you mathematically represent that object?<br>
-</p>
-
-<p>
-Our goal is to run a numerical simulation in 3D. To achieve that goal, we need to be able to describe the shape of a 3D object mathematically.<br>
-</p>
-
-<p>
-For a perfect sphere that is simple.<br>
-</p>
-</div>
+<div id="outline-container-org9682e44" class="outline-2">
+<h2 id="org9682e44">What is a finite element</h2>
 </div>
 </div>
 <div id="postamble" class="status">

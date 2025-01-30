@@ -71,6 +71,10 @@ h1 {
   width:100%;
 }
 
+.title {
+  margin-bottom: 0;
+}
+
 .subtitle {
   width:100%;
   color: var(--nord-5);
@@ -78,6 +82,11 @@ h1 {
   font-weight: 200;
   font-size: 0.6em;
   border-bottom: solid 1px var(--nord-13);
+}
+
+.date {
+  font-size: 1em;
+  padding: .3em 0 1em 0;
 }
 
 h2 {
@@ -91,7 +100,7 @@ h2 {
 h3 {
   font-weight: 300;
   font-size: 1.33em;
-  color: var(--nord-6);
+  color: var(--nord-15);
   padding-top: 1em;
   border-bottom: solid 1px var(--nord-3);
 }

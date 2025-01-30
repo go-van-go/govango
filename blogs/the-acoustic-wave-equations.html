@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-29 Wed 15:02 -->
+<!-- 2025-01-30 Thu 12:14 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The acoustic wave equation</title>
@@ -190,10 +190,11 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   .org-svg { }
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 <script type="module" src="../assets/js/navbar.js"></script>
+<base target="_blank">
 <script>
   window.MathJax = {
     tex: {
@@ -240,10 +241,10 @@
     <label class="logo"><a href="/index.html">Go Van Go</a></label>
     <!-- Navigation links -->
     <ul class="navbar-ul">
-      <li><a class="active" href="/index.html">Home</a></li>
-      <li><a href="/about.html">About</a></li>
-      <li><a href="/blog.html">Blog</a></li>
-      <li><a href="/contact.html">Contact</a></li>
+      <li><a target="_self" class="active" href="/index.html">Home</a></li>
+      <li><a target="_self" href="/about.html">About</a></li>
+      <li><a target="_self" href="/blog.html">Blog</a></li>
+      <li><a target="_self" href="/contact.html">Contact</a></li>
     </ul>
   </nav>
 </div>
@@ -252,6 +253,8 @@
 <br>
 <span class="subtitle">and how to pick the right form for ultrasound imaging.</span>
 </h1>
+<p class="date"><i>last update: Jan 30, 2025</i></p>
+
 <div class="hero-latex">
 \begin{equation*}
 \nabla^2 p - \frac{1}{c^2} \frac{\delta^2 p}{\delta t^2} = 0
@@ -297,15 +300,104 @@ Each of these papers is conceptualizing the acoustic wave propagation problem us
 </div>
 <div id="outline-container-org25c1dfb" class="outline-3">
 <h3 id="org25c1dfb">3D anisotropic variable density visco-acoustic wave equation</h3>
+<div class="outline-text-3" id="text-org25c1dfb">
+\begin{equation}
+\rho(\mathbf{x}) \frac{\partial^2 p}{\partial t^2} 
+- \nabla \cdot \left( \mathbf{C}(\mathbf{x}) \nabla p \right) 
++ \eta(\mathbf{x}) * \frac{\partial p}{\partial t} 
+= s(\mathbf{x}, t)
+\end{equation}
+<ul class="org-ul">
+<li>\(p=p(x,t)\) is the acoustic pressure,<br></li>
+<li>\(\rho(x)\rho(x)\) is the spatially varying density,<br></li>
+<li>\(C(x)C(x)\) is the anisotropic stiffness tensor,<br></li>
+<li>\(\eta(x)\eta(x)\) represents the intrinsic attenuation mechanism (often modeled via memory variables or convolution with a relaxation kernel),<br></li>
+<li>\(s(x,t)s(x,t)\) is the source term.<br></li>
+</ul>
+
+<p>
+I came across this particular formulation of the acoustic equations in a 2020 paper by Guash, et. al [<a href="#citeproc_bib_item_1">1</a>]. In this paper the group from Imperial College London and University College London used the model as a part of a full-waveform inversion (FWI) imaging algorithm to image a simulated model of the human brain.<br>
+</p>
+
+<p>
+To do this, the group used the <a href="https://fullwave3d.github.io/">Fullwave3D</a> software package from another group at the Imperial College London. This particular package is for seismic imaging, but the group has applied the same model to image the brain. This makes sense in some regards. The brain is also anisotropic in its response to acoustic waves (meaning it has a different response depending on the direction of the wave). The veins of minerals and sheets of sediment found in seismic imaging are somewhat like the layers of tissue and blood vessels in the brain.<br>
+</p>
+
+<p>
+However, this code is locked behind a commercial paywall, so I can't see exactly why they chose a viscoacoustic model and not something else. They do point to a 2019 paper [<a href="#citeproc_bib_item_5">5</a>] about FWI for seismic imaging that suggests that the dispersion added by the viscosity makes their model more physically accurate.<br>
+</p>
+
+<p>
+<b>Conclusion</b>: Pick this model if you work at Imperial College London and you are interested only in linear phenomenon.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org091d4b9" class="outline-3">
+<h3 id="org091d4b9">Westervelt equation</h3>
+<div class="outline-text-3" id="text-org091d4b9">
+\begin{equation}
+\nabla^2 p - \frac{1}{c^2} \frac{\partial^2 p}{\partial t^2} 
++ \frac{\delta}{c^4} \frac{\partial^3 p}{\partial t^3} 
+= \frac{\beta}{\rho c^4} \frac{\partial^2 p^2}{\partial t^2}
+\end{equation}
+
+<p>
+I found this equation in a paper written by a PhD student who was trying to incorporate nonlinear effects into their FWI algorithm [<a href="#citeproc_bib_item_2">2</a>]. They weren't specifically trying to image the brain here.<br>
+</p>
+
+<p>
+This is the first paper I've seen insist that we should incorporate nonlinear effects into our ultrasound imaging model. They cite a 1999 article called <i>Ultrasonic imaging of the human body</i> [<a href="#citeproc_bib_item_6">6</a>] that states:<br>
+</p>
+
+<p>
+<i>" Although it is often convenient to assume that the pressure of a wave is proportional to the particle displacement amplitude, this is really only justifiable at small amplitudes. Except at infinitely-small amplitudes, the nonlinear relationship between pressure and density becomes a significant factor&#x2026; Real tissue possesses frequency-dependent attenuation and is nonlinear and inhomogeneous."</i><br>
+</p>
+
+<p>
+<b>Conclusion</b>: Seems like a pretty good argument for including nonlinear effects.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org65dd4ed" class="outline-3">
+<h3 id="org65dd4ed">Linear acoustic wave equation written as a conservative system of equations</h3>
+<div class="outline-text-3" id="text-org65dd4ed">
+\begin{equation}
+\begin{aligned}
+    && \frac{1}{K} \frac{\partial p}{\partial t} = -\nabla \cdot \mathbf{v} \\
+    && \rho \frac{\partial \mathbf{v}}{\partial t} = -\nabla p + \mathbf{f} \\
+\end{aligned}
+\end{equation}
+<ul class="org-ul">
+<li>\(p\) is the pressure<br></li>
+<li>\(\mathbf{v} = (v_1, v_2, v_3)\) is the particle velocity<br></li>
+<li>\(\rho\) is the mass density<br></li>
+<li>\(f\) is the applied force<br></li>
+</ul>
+
+<p>
+This is a common way to present the linear acoustic equations when you want to use them in a finite volume (FV), finite element (FE), or discontinuous galerkin (DG) algorithm (see [<a href="#citeproc_bib_item_3">3</a>] [<a href="#citeproc_bib_item_7">7</a>]).<br>
+</p>
+
+<p>
+The linear acoustic wave equation is a hyperbolic partial differential equation (PDE). This just means that it's solution consists of waves. When solving hyperbolic PDEs, a simple method is to get it into conservative form, then apply the spatial discretization (FV, FE, DG method). This just simplifies the mathematics.<br>
+</p>
+
+<p>
+<b>Conclusion</b>: use this method if you want to use powerful methods on an unstructured <a href="./what-is-a-computational-mesh">mesh</a>, get stuff done fast, and don't care about nonlinearity.<br>
+</p>
+</div>
 </div>
 <div id="outline-container-org7b8f60f" class="outline-3">
 <h3 id="org7b8f60f">Elastic wave equation</h3>
 </div>
-<div id="outline-container-org091d4b9" class="outline-3">
-<h3 id="org091d4b9">Westervelt equation</h3>
-</div>
+
 <div id="outline-container-org1ef4d78" class="outline-3">
 <h3 id="org1ef4d78">Khokhlov-Zabolotskaya-Kuznetsov (KZK) equation</h3>
+<div class="outline-text-3" id="text-org1ef4d78">
+<p>
+TODO<br>
+</p>
+</div>
 </div>
 </div>
 <div id="outline-container-org5829d68" class="outline-2">
@@ -320,10 +412,19 @@ Each of these papers is conceptualizing the acoustic wave propagation problem us
     <div class="csl-left-margin">2. </div><div class="csl-right-inline">Shultzman A, Eldar YC. <a href="https://doi.org/10.1109/TCI.2022.3208515">Nonlinear waveform inversion for quantitative ultrasound</a>. Ieee transactions on computational imaging. 2022;8:893–904. </div>
   </div>
   <div class="csl-entry"><a id="citeproc_bib_item_3"></a>
-    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Vandekerckhove S. Simulation of wave propagation problems for automated characterisation of material parameters [Internet]. 2016. Available from: <a href="https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0">https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&#38;tab=LIRIAS&#38;search_scope=lirias_profile&#38;vid=32KUL_KUL:Lirias&#38;offset=0</a></div>
+    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Vandekerckhove S. <a href="https://doi.org/https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0">Simulation of wave propagation problems for automated characterisation of material parameters</a>. 2016; </div>
   </div>
   <div class="csl-entry"><a id="citeproc_bib_item_4"></a>
-    <div class="csl-left-margin">4. </div><div class="csl-right-inline">Hirsch S, Braun J, Sack I. Magnetic resonance elastography: Physical background and medical applications [Internet]. Weinheim, Germany: WILEY-VCH Verlag GmbH &#38; Co. KGaA; 2017. Available from: <a href="https://doi.org/10.1002/9783527696017">https://doi.org/10.1002/9783527696017</a></div>
+    <div class="csl-left-margin">4. </div><div class="csl-right-inline">Hirsch S, Braun J, Sack I. <a href="https://doi.org/10.1002/9783527696017">Magnetic resonance elastography: Physical background and medical applications</a>. Weinheim, Germany: WILEY-VCH Verlag GmbH &#38; Co. KGaA; 2017. </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_5"></a>
+    <div class="csl-left-margin">5. </div><div class="csl-right-inline">da Silva NV, Yao G, Warner M. Semiglobal viscoacoustic full-waveform inversion. Geophysics [Internet]. 2019;84(2):R271–93. Available from: <a href="https://doi.org/10.1190/geo2017-0773.1">https://doi.org/10.1190/geo2017-0773.1</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_6"></a>
+    <div class="csl-left-margin">6. </div><div class="csl-right-inline">Wells PNT. Ultrasonic imaging of the human body. Reports on progress in physics [Internet]. 1999 May;62(5):671. Available from: <a href="https://dx.doi.org/10.1088/0034-4885/62/5/201">https://dx.doi.org/10.1088/0034-4885/62/5/201</a></div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_7"></a>
+    <div class="csl-left-margin">7. </div><div class="csl-right-inline">LeVeque RJ. Finite volume methods for hyperbolic problems. Cambridge Univ. Press; 2004. </div>
   </div>
 </div>
 </div>

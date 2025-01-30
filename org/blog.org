@@ -4,5 +4,6 @@
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>
 <li><a class="blog-links" href="/blogs/the-acoustic-wave-equations.html">The acoustic wave equation</a></li>
+<li><a class="blog-links" href="/blogs/finite-elements-from-scratch-in-python.html">Finite elements from scratch, (in python)</a></li>
 </ul>
 #+END_EXPORT

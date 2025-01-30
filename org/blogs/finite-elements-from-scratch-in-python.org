@@ -1,0 +1,23 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: Finite Elements From Scratch (in Python)
+#+SUBTITLE: and how to pick the right one for your simulation 
+#+HTML: <p class="date"><i>last update: Jan 30, 2025</i></p>
+
+#+BEGIN_EXPORT html
+<div id="three-js-container"></div>
+#+END_EXPORT
+*Interactive* 3D mesh of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh. 
+
+#+BEGIN_EXPORT html
+<script type="module" src="/assets/js/reference-tetrahedron.js"></script>
+#+END_EXPORT
+
+* Article Motivation 
+#+BEGIN_QUOTE
+- What is a finite element?
+- How does it relate to a mesh?
+- Which is the right element for my simulation?
+- Code it in python.
+#+END_QUOTE
+
+* What is a finite element
