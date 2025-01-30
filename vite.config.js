@@ -16,6 +16,7 @@ export default defineConfig({
 		blog: resolve(__dirname, 'blog.html'),
 		blog1: resolve(__dirname, 'blogs/what-is-a-computational-mesh.html'),
 		blog2: resolve(__dirname, 'blogs/finite-elements-from-scratch-in-python.html'),
+		blog3: resolve(__dirname, 'blogs/what-type-of-medical-imaging-data-exists.html'),
 	    },
     },
   },
