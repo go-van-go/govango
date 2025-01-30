@@ -5,18 +5,19 @@ import { defineConfig } from 'vite'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  base: './', // paths are relative to the current directory
-  build: {
-    outDir: './',
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        contact: resolve(__dirname, 'contact.html'),
-        about: resolve(__dirname, 'about.html'),
-        blog: resolve(__dirname, 'blog.html'),
-        blog1: resolve(__dirname, 'blogs/what-is-a-computational-mesh.html'),
-        blog2: resolve(__dirname, 'blogs/finite-elements-from-scratch-in-python.html'),
-      },
+    base: './', // paths are relative to the current directory
+    build: {
+	outDir: './',
+	rollupOptions: {
+	    input: {
+		main: resolve(__dirname, 'index.html'),
+		contact: resolve(__dirname, 'contact.html'),
+		about: resolve(__dirname, 'about.html'),
+		blog: resolve(__dirname, 'blog.html'),
+		blog1: resolve(__dirname, 'blogs/what-is-a-computational-mesh.html'),
+		blog2: resolve(__dirname, 'blogs/finite-elements-from-scratch-in-python.html'),
+	    },
+            external: (id) => id.startsWith('org/'), // Exclude everything inside /org/
     },
   },
 })
