@@ -26,3 +26,5 @@ Note: were talking about specific elements that are used in finite element analy
 There are two ways to explain finite elements, the simple way and the rigorous mathematical way.
 
 The simple way
+
+The rigous mathematical one is usually taken from /The Mathematical Theory of Finite Element Methods/ by Brenner and Scott [cite:@brenner2008mathematical]. Their definition expands on the classic 1978 definition from P. Ciarlet [cite:@ciarlet1978finite].

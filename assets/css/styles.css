@@ -154,6 +154,31 @@ blockquote ul li {
 }
 
 /* *******************************************************
+ *                     EMPHASIS BLOCK 
+ * *******************************************************/
+blockquote{
+  width:86%;
+  margin:30px auto 20px auto;
+  font-style:italic;
+  padding:1em 20px 1.6em 0;
+  border-left:8px solid var(--nord-13) ;
+  line-height:1;
+  position: relative;
+  background:var(--nord-2);
+  border-radius: 10px;
+}
+
+blockquote p {
+  padding-top: 0;
+}
+blockquote ul {
+  list-style-position: inside; /* Ensures the bullets stay inside the blockquote */
+}
+blockquote ul li {
+  font-size: 1.3em;
+}
+
+/* *******************************************************
  *                     HERO LATEX 
  * *******************************************************/
 .hero-latex {

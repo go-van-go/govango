@@ -5,7 +5,7 @@
 <div id="three-js-container"></div>
 #+END_EXPORT
 
-*Interactive* 3D mesh of the surface of a brain. _*Click and drag*_ to move around the mesh. 
+*Interactive* 3D mesh of the surface of a human brain. _*Click and drag*_ to move around the mesh. 
 
 #+BEGIN_EXPORT html
 <script type="module" src="/assets/js/simple-mesh.js"></script>
