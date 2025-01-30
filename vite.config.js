@@ -17,7 +17,6 @@ export default defineConfig({
 		blog1: resolve(__dirname, 'blogs/what-is-a-computational-mesh.html'),
 		blog2: resolve(__dirname, 'blogs/finite-elements-from-scratch-in-python.html'),
 	    },
-            external: (id) => id.startsWith('org/'), // Exclude everything inside /org/
     },
   },
 })

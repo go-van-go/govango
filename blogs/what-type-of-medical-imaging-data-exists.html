@@ -4,7 +4,7 @@
 <!-- 2025-01-30 Thu 14:11 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Finite Elements From Scratch (in Python)</title>
+<title>What Type of Medical Imaging Data Exists?</title>
 <meta name="generator" content="Org Mode" />
 <style type="text/css">
   #content { max-width: 60em; margin: auto; }
@@ -195,38 +195,6 @@
 <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 <script type="module" src="../assets/js/navbar.js"></script>
 <base target="_blank">
-<script>
-  window.MathJax = {
-    tex: {
-      ams: {
-        multlineWidth: '85%'
-      },
-      tags: 'ams',
-      tagSide: 'right',
-      tagIndent: '.8em'
-    },
-    chtml: {
-      scale: 1.0,
-      displayAlign: 'center',
-      displayIndent: '0em'
-    },
-    svg: {
-      scale: 1.0,
-      displayAlign: 'center',
-      displayIndent: '0em'
-    },
-    output: {
-      font: 'mathjax-modern',
-      displayOverflow: 'overflow'
-    }
-  };
-</script>
-
-<script
-  id="MathJax-script"
-  async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
 </head>
 <body>
 <div id="preamble" class="status">
@@ -249,74 +217,36 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">Finite Elements From Scratch (in Python)
+<h1 class="title">What Type of Medical Imaging Data Exists?
 <br>
-<span class="subtitle">and how to pick the right one for your simulation</span>
+<span class="subtitle">common file types, and the information we store about the human body</span>
 </h1>
 <p class="date"><i>last update: Jan 30, 2025</i></p>
-
-<div id="three-js-container"></div>
-<p>
-<b>Interactive</b> 3D visualization of a <b>reference tetrahedron</b> for a finite element mesh. <span class="underline"><b>Click and drag</b></span> to move around the mesh.<br>
-</p>
-
-<script type="module" src="/assets/js/reference-tetrahedron.js"></script>
-<div id="outline-container-orgaa385df" class="outline-2">
-<h2 id="orgaa385df">Article Motivation</h2>
-<div class="outline-text-2" id="text-orgaa385df">
+<div id="outline-container-orgf7a5e68" class="outline-2">
+<h2 id="orgf7a5e68">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgf7a5e68">
 <blockquote>
 <ul class="org-ul">
-<li>What is a finite element?<br></li>
-<li>How does it relate to a mesh?<br></li>
-<li>Which is the right element for my simulation?<br></li>
-<li>Code it in python.<br></li>
+<li>What are the common file types in medical imaging?<br></li>
+<li>What information is saved in those files?<br></li>
+<li>What type of data can we obtain about the human body?<br></li>
 </ul>
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org6a88b19" class="outline-2">
-<h2 id="org6a88b19">What is a finite element?</h2>
-<div class="outline-text-2" id="text-org6a88b19">
-<p>
-<i>Note: were talking about specific elements that are used in finite element analysis (FEA), not the finite element method (FEM) as a whole.</i><br>
-</p>
-
-<p>
-A finite element is a mathematical tool that serves as <b>building block for a numerical simulation</b> that uses the finite element method for its spatial discretization.<br>
-</p>
-
-<p>
-The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
-</p>
-
-<div class="emphasis" id="orgecbddde">
-<p>
-A finite element is a set that contains the following three objects:<br>
-</p>
-<ol class="org-ol">
-<li>A volume, \(\mathcal{K}\),  with a piecewise smooth boundary.<br></li>
-<li>A space of basis functions, \(\mathcal{P}\).<br></li>
-<li>A set of nodal points, \(\mathcal{N} = {N_1, N_2, ..., N_k}\).<br></li>
-</ol>
-
+<div id="outline-container-orga5f6199" class="outline-2">
+<h2 id="orga5f6199">Common file Types</h2>
+<div class="outline-text-2" id="text-orga5f6199">
 </div>
-
-<p>
-All three of these are described by <b>sets</b>, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties.<br>
-</p>
+<div id="outline-container-org629a98f" class="outline-3">
+<h3 id="org629a98f">DICOM</h3>
 </div>
 </div>
-<div id="outline-container-org513788a" class="outline-2">
-<h2 id="org513788a">References</h2>
-<div class="outline-text-2" id="text-org513788a">
+<div id="outline-container-org44c5edc" class="outline-2">
+<h2 id="org44c5edc">References</h2>
+<div class="outline-text-2" id="text-org44c5edc">
 <style>.csl-left-margin{float: left; padding-right: 0em;}
- .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
-  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
-    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Brenner SC, Scott LR. <a href="https://doi.org/10.1007/978-0-387-75934-0">The mathematical theory of finite element methods</a>. 3rd ed. Springer New York, NY; 2008. (Texts in applied mathematics; vol. 15). </div>
-  </div>
-  <div class="csl-entry"><a id="citeproc_bib_item_2"></a>
-    <div class="csl-left-margin">2. </div><div class="csl-right-inline">Ciarlet PG. The finite element method for elliptic problems [Internet]. Society for Industrial and Applied Mathematics; 2002. Available from: <a href="https://epubs.siam.org/doi/abs/10.1137/1.9780898719208">https://epubs.siam.org/doi/abs/10.1137/1.9780898719208</a></div>
-  </div>
+ .csl-right-inline{margin: 0 0 0 0em;}</style><div class="csl-bib-body">
 </div>
 </div>
 </div>

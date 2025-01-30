@@ -1,0 +1,19 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: What Type of Medical Imaging Data Exists?
+#+SUBTITLE: common file types, and the information we store about the human body 
+#+HTML: <p class="date"><i>last update: Jan 30, 2025</i></p>
+
+* Article Motivation 
+#+BEGIN_QUOTE
+- What are the common file types in medical imaging?
+- What information is saved in those files?
+- What type of data can we obtain about the human body?
+#+END_QUOTE
+
+* Common file Types
+** DICOM
+
+* References
+#+print_bibliography:
+
+

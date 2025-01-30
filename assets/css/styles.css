@@ -80,7 +80,7 @@ h1 {
   color: var(--nord-5);
   font-style:italic;
   font-weight: 200;
-  font-size: 0.6em;
+  font-size: 0.5em;
   border-bottom: solid 1px var(--nord-13);
 }
 
@@ -142,7 +142,6 @@ blockquote{
   background:var(--nord-2);
   border-radius: 10px;
 }
-
 blockquote p {
   padding-top: 0;
 }
@@ -156,28 +155,35 @@ blockquote ul li {
 /* *******************************************************
  *                     EMPHASIS BLOCK 
  * *******************************************************/
-blockquote{
-  width:86%;
+.emphasis {
   margin:30px auto 20px auto;
   font-style:italic;
-  padding:1em 20px 1.6em 0;
-  border-left:8px solid var(--nord-13) ;
+  padding:1em 20px 1.6em 40px;
+  border-left:8px solid var(--nord-10) ;
   line-height:1;
   position: relative;
   background:var(--nord-2);
   border-radius: 10px;
 }
-
-blockquote p {
+.emphasis p {
   padding-top: 0;
 }
-blockquote ul {
-  list-style-position: inside; /* Ensures the bullets stay inside the blockquote */
+.emphasis ul {
+  margin-left: 1em;
 }
-blockquote ul li {
+.emphasis ul li {
   font-size: 1.3em;
 }
 
+/* *******************************************************
+ *                     ORDERED LISTS UL LI 
+ * *******************************************************/
+.org-ol {
+  list-style-position: inside; 
+}
+.org-ol li{
+  padding-left: 1em; 
+}
 /* *******************************************************
  *                     HERO LATEX 
  * *******************************************************/
@@ -307,7 +313,7 @@ ul {
 .blog-links {
   color: var(--nord-10);
   text-decoration: none; /* Ensures links remain without underline */
-  font-size: 1.4em;
+  font-size: 1em;
   font-weight: 200;
 }
 
