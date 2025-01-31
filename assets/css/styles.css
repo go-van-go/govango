@@ -60,6 +60,10 @@ body {
 .outline-2 {
   width: 100%;
 }
+
+b {
+  font-weight: 700;
+}
 /* *******************************************************
  *                     HEADERS 
  * *******************************************************/
@@ -127,7 +131,6 @@ li {
 .org-src-container {
   margin-top: 1em; /* Add some padding for small screens */
 }
-
 /* *******************************************************
  *                     QUOTE BLOCKS 
  * *******************************************************/
@@ -146,7 +149,6 @@ blockquote p {
   padding-top: 0;
 }
 blockquote ul {
-  list-style-position: inside; /* Ensures the bullets stay inside the blockquote */
 }
 blockquote ul li {
   font-size: 1.3em;
@@ -173,6 +175,39 @@ blockquote ul li {
 }
 .emphasis ul li {
   font-size: 1.3em;
+}
+
+/* *******************************************************
+ *                     EXTRA BLOCK 
+ * *******************************************************/
+.extra {
+  width:100%;
+  margin:30px auto 20px auto;
+  font-style:italic;
+  padding:1em 20px 1.6em 0;
+  border-left:8px solid var(--nord-15) ;
+  line-height:1;
+  position: relative;
+  background:var(--nord-2);
+  border-radius: 10px;
+}
+.extra p {
+  padding-top: 0;
+  padding-left: 1em;
+}
+.extra ul {
+  margin-left: 1em;
+}
+}
+.extra ul li {
+  font-size: 1.3em;
+}
+
+/* *******************************************************
+ *                     BLOG IMAGES 
+ * *******************************************************/
+.blog-image{
+  width: 75%;
 }
 
 /* *******************************************************
@@ -427,6 +462,44 @@ footer {
   #three-js-container {
     height: 50vw !important;
   }
+
+  .blog-image{
+    width: 100%;
+  }
+  /* *******************************************************
+   *                     HEADERS 
+   * *******************************************************/
+  h1 {
+    font-size: 2em;
+  }
+  
+  .subtitle {
+    font-size: 0.66em;
+  }
+  
+  .date {
+    font-size: 1em;
+    padding: .3em 0 1em 0;
+  }
+  
+  h2 {
+    font-size: 1.5em;
+  }
+/* *******************************************************
+ *                    BLOCKQUOTE 
+ * *******************************************************/
+  blockquote{
+    width:100%;
+    margin:10px auto 10px auto;
+    padding: 0.5em 10px 1em 0;
+  }
+  blockquote ul {
+    margin-left: 10px;
+  }
+  blockquote ul li {
+    font-size: 1em;
+  }
+
 }
 
 /* *******************************************************

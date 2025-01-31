@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-30 Thu 14:11 -->
+<!-- 2025-01-31 Fri 12:44 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>What Type of Medical Imaging Data Exists?</title>
@@ -219,7 +219,7 @@
 <div id="content" class="content">
 <h1 class="title">What Type of Medical Imaging Data Exists?
 <br>
-<span class="subtitle">common file types, and the information we store about the human body</span>
+<span class="subtitle">common file types, open data sets, and the information we store about the human body</span>
 </h1>
 <p class="date"><i>last update: Jan 30, 2025</i></p>
 <div id="outline-container-orgf7a5e68" class="outline-2">
@@ -229,24 +229,137 @@
 <ul class="org-ul">
 <li>What are the common file types in medical imaging?<br></li>
 <li>What information is saved in those files?<br></li>
+<li>Where can I find large amounts of good, free data?<br></li>
 <li>What type of data can we obtain about the human body?<br></li>
 </ul>
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orga5f6199" class="outline-2">
-<h2 id="orga5f6199">Common file Types</h2>
-<div class="outline-text-2" id="text-orga5f6199">
+<div id="outline-container-orgd1e313b" class="outline-2">
+<h2 id="orgd1e313b">Intro</h2>
+<div class="outline-text-2" id="text-orgd1e313b">
+<p>
+Every medical imaging modality measures and stores physical parameters of the human body.<br>
+</p>
+
+<p>
+2D x-ray stores the <b>total attenuation factor</b> (how much the tissue absorbs the radiation) of all the tissues in our body along the axis of the propagation of the x-rays. The modern way of collecting this data is on a 2D array of photo-diodes (see fig. <a href="#org71bccda">1</a>). We could think of the data we need to store as a 2D array of scalar values.<br>
+</p>
+
+<div class="extra" id="orgde6b0c2">
+<p>
+Around the globe it is still very common to take x-rays sheets of film.  This analog option can produce great images, but since we are more interested in the digital data that we can obtain, we won't focus on that here.<br>
+</p>
+
 </div>
-<div id="outline-container-org629a98f" class="outline-3">
-<h3 id="org629a98f">DICOM</h3>
+
+
+<div id="org71bccda" class="figure">
+<p><img src="../../public/xray-detector.jpg" alt="A diagram of a 2D x-ray detector." class="blog-image"><br>
+</p>
+<p><span class="figure-number">Figure 1: </span>A diagram of a 2D x-ray detector. The data is collected as a 2D array of photo diodes called <i>Pixel Array</i> in this image.</p>
+</div>
+
+<p>
+A computed tomography scan (also known as CT or CAT scan), also measures the attenuation values and stores the raw data as an array. MRI typically measures <b>T1 and T2 relaxation time of tissues</b>. Ultrasound measures the <b>intensity and timing of reflected of acoustic signals</b> (electrical signals really, since the source and receiver is a piezoelectric device).<br>
+</p>
+
+<p>
+All of these modalities produce raw data that can be reconstructed into image. All medical imaging needs more then just the image file. It needs to include a bunch of meta-data about the image. Things like patient name, height, weight, image type, study date, study time, modality, device manufacturer, scan settings, medical codes, slice thickness, etc. etc. That is where DICOM files come in.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org629a98f" class="outline-2">
+<h2 id="org629a98f">DICOM</h2>
+<div class="outline-text-2" id="text-org629a98f">
+<p>
+<a href="https://www.dicomstandard.org/about-home">DICOM</a> its an <b>international standard</b> for transmitting and storing medical image data. It also is a <b>file type</b> (<code>.dcm</code>).<br>
+</p>
+
+<p>
+The intellectual property of DICOM is owned by The National Electrical Manufacturers Association (NEMA) which is a trade association of 350 companies including Canon, DuPont, Duracell, Eli Lilly, GE, Mitsubishi and more.<br>
+</p>
+
+<p>
+DICOM grew out of a need for hospitals, doctors offices, medical specialists, and imaging centers to be able to communicate medical images in some uniform way.<br>
+</p>
+
+<p>
+The standards of DICOM are now a 4100 page book that details everything about the storage and transmission of medical images. It covers data structures, encoding, how it should be sent over the internet, security protocols, and much more.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org9657e4d" class="outline-2">
+<h2 id="org9657e4d">What does a .dcm file look like?</h2>
+<div class="outline-text-2" id="text-org9657e4d">
+<p>
+Lets download one. We'll use the datasets at <a href="https://www.cancerimagingarchive.net/browse-collections/">Cancer Imaging Archive</a> and download a study. I get a folder with some DICOM <code>.dcm</code> files. Trying to open one shows that they are stored as binary format. The DICOM standard tells us how to decode this.<br>
+</p>
+
+<p>
+I open with an online DICOM viewer. There are 92 images in the study I downloaded, and a bunch of meta data. Finding out exactly how the images are stored in the <code>.dcm</code> file is a bit tricker. It seems that <code>.dcm</code> files can include things like JPEG, TIFF, and raw pixel data, and you can use the metadata to decode each image. They can also contain raw data, or <b>acquisition vales</b>, that need to be reconstructed into the image.<br>
+</p>
+
+<p>
+You'll probably need a library like <code>pydicom</code> to be able to process the data<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org6708fc7" class="outline-2">
+<h2 id="org6708fc7">What other common file types exist?</h2>
+<div class="outline-text-2" id="text-org6708fc7">
+<p>
+There is another huge repository of medical imaging data called <a href="https://openneuro.org/">OpenNEURO</a> that converts the <code>.dcm</code> files into their own Brain Imaging Data Structure (BIDS). BIDS is a standardized directory structure that stores the MRI image files as <code>.nii</code> files (Neuroimaging Informatics Technology Initiative). These files store the <b>intensity of the MR signal</b> at each of voxel in the image.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org57bfbbe" class="outline-2">
+<h2 id="org57bfbbe">What about ultrasound data?</h2>
+<div class="outline-text-2" id="text-org57bfbbe">
+<p>
+The <b>raw data of ultrasound</b> as measured by the device, is a time series of electrical signals caused by bouncing ultrasonic acoustic waves off of the tissues deep in the body. After image reconstruction, the resulting image shows the <b>acoustic impedance</b> at each cell or voxel. With a bit of post-processing, this data can be converted into <b>wave speed</b> at each point in the image.<br>
+</p>
+
+<p>
+Most of the time you'll find ultrasound data stored in <code>.dcm</code> files. Inside the <code>.dcm</code> file you might find JPEG or TIFF images. You might also find raw data in the form of time signals.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgd9db7f9" class="outline-2">
+<h2 id="orgd9db7f9">Is there ultrasound data of the brain?</h2>
+<div class="outline-text-2" id="text-orgd9db7f9">
+<p>
+A little bit.<br>
+</p>
+
+<p>
+Ultrasound imaging of the brain is only just recently becoming feasible with something called the Full Waveform Inversion (FWI)  algorithm. So far, nobody has been able to create a clinically viable form of this technology, so we don't have that data.<br>
+</p>
+
+<p>
+However, <b>neonatal ultrasound scans</b> exist that image a fetuses brain in the womb,  before the skull is fully developed. Also, cranial ultrasound for adults is possible, but only <b>after the skull has been opened during brain surgery</b>.<br>
+</p>
+
+<p>
+That data comes in 2D images (often <code>.png</code> files) and is often pretty blurry (see fig. <a href="#org7de0186">2</a>)<br>
+</p>
+
+
+<div id="org7de0186" class="figure">
+<p><img src="../../public/neonatal-ultrasound.png" alt="neonatal ultrasound data from a study be Mahmood Alzubaidi et al." class="blog-image"><br>
+</p>
+<p><span class="figure-number">Figure 2: </span>Neonatal ultrasound data from Alzubaidi et al [<a href="#citeproc_bib_item_1">1</a>]</p>
+</div>
 </div>
 </div>
 <div id="outline-container-org44c5edc" class="outline-2">
 <h2 id="org44c5edc">References</h2>
 <div class="outline-text-2" id="text-org44c5edc">
 <style>.csl-left-margin{float: left; padding-right: 0em;}
- .csl-right-inline{margin: 0 0 0 0em;}</style><div class="csl-bib-body">
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Alzubaidi M, Agus M, Makhlouf M, Anver F, Alyafei K, Househ M. Large-scale annotation dataset for fetal head biometry in ultrasound images. Data in brief [Internet]. 2023;109708. Available from: <a href="https://doi.org/10.5281/zenodo.8265464">https://doi.org/10.5281/zenodo.8265464</a></div>
+  </div>
 </div>
 </div>
 </div>
