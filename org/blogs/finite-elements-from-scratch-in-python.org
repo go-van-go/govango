@@ -3,10 +3,12 @@
 #+SUBTITLE: and how to pick the right one for your simulation 
 #+HTML: <p class="date"><i>last update: Jan 30, 2025</i></p>
 
+#+NAME: reference-tetrahedron
 #+BEGIN_EXPORT html
 <div id="three-js-container"></div>
 #+END_EXPORT
-*Interactive* 3D visualization of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh. 
+#+ATTR_HTML: :class three-js-caption
+*Interactive* 3D visualization of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh.
 
 #+BEGIN_EXPORT html
 <script type="module" src="/assets/js/reference-tetrahedron.js"></script>
@@ -21,7 +23,7 @@
 #+END_QUOTE
 
 * What is a finite element?
-/Note: were talking about specific elements that are used in finite element analysis (FEA), not the finite element method (FEM) as a whole./
+*Note*: /were talking about specific elements that are used in finite element analysis (FEA), not the finite element method (FEM) as a whole./
 
 A finite element is a mathematical tool that serves as *building block for a numerical simulation* that uses the finite element method for its spatial discretization.
 
@@ -31,10 +33,69 @@ The rigous mathematical definition is usually taken from /The Mathematical Theor
 A finite element is a set that contains the following three objects:
 1. A volume, $\mathcal{K}$,  with a piecewise smooth boundary.
 2. A space of basis functions, $\mathcal{P}$.
-3. A set of nodal points, $\mathcal{N} = {N_1, N_2, ..., N_k}$.
+3. A set of nodal variables , $\mathcal{N} = {N_1, N_2, ..., N_k}$.
 #+END_emphasis
 
-All three of these are described by *sets*, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties.
+All three of these are described by *sets*, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties. If you are interested in their mathematical properties, you should note that *the nodal variables*, $\mathcal{N}$ *form a basis for the dual space of P*.
+
+#+BEGIN_extra
+If $V$ is a vector space over the real numbers $\mathbb{R}$, the the /dual space of V/, denoted $V'$ is the set of all linear functionals that map $V \rightarrow \mathbb{R}$. This means all functions that can map a vector in $V$ to a scalar in $\mathbb{R}$. This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.
+
+The fact that all the points in $\mathcal{N}$ form a basis for $\mathcal{P}$ 
+#+END_extra
+
+I find this to be a bit counterintuitive. I tend to think of elements as structures that contain a *set of points or nodes*, a *volume* (often a triangle or tetrahedron in 3D) and a *set of basis functions*.
+
+* What types of finite elements exist?
+A lot.
+
+Check out [[https://defelement.org/elements/index.html][DefElement]] for a alphabetical list of most of them.
+
+* How do I find out which element I need?
+There are some questions you can ask to narrow it down:
+
+** What function space do you need?
+Maxwell's equations, for example, require a curl conforming element (the curl of the field has to be continuous). *Nédélec* elements would be a great first choice.
+
+** What type of mesh are you using?
+A tetrahedral [[https://govango.org/blogs/what-is-a-computational-mesh][mesh]] requires tetrahedral elements. *Lagrange* elements are a perfect first choice for tetrahedral elements with scalar unknowns.
+
+** Do you need to reduce computational time?
+If you're using a parallelepiped mesh, *serendipity* elements might be a good starting choice.
+
+In my case, I want to simulate ultrasound waves passing through the brain. That's a complex geometry so I want a unstructured tetrahedron mesh. I'm using a linear acoustic wave equation so *Lagrange elements* will be perfect to start. I can always adapt in the future. Based on this PhD thesis[cite:@vandekerckhove2016simulation] I should use 3rd order basis functions for the best bang for my buck.
+
+* Python Code
+Lets build a *3rd order Lagrange element on a tetrahedron* in python. I plan to use this code to build simulations using the finite element method (FEM) (specifically the discontinuous Galerkin variation), lets build a class that we can use in a bunch of projects.
+
+As we said before, this class should contain a *set of points* (often called a *nodal basis*) some *basis functions* (in this case, 3rd order Lagrange basis functions), an it should be expressed on some *volume*.
+
+#+BEGIN_emphasis
+/Do I have to make a separate element for each cell in my mesh?/
+
+No. Typically all the calculations are done on a *reference element*, and then mapped to each cell in the mesh via a linear /affine/ transformation. Right now we are just going to build that reference element.
+#+END_emphasis
+
+*Volume*: The reference tetrahedron for an unstructured mesh, with vertices at $(0,0,0), (0,1,0), (0,0,1), (1,0,0)$.
+
+*Nodal basis*: there are more options here again, but we'll go with the Gauss-Lobatto-Legendre (GLL) quadrature points. These help reduce the Runge phenomenon.
+
+*Basis functions*: third order Lagrange functions.
+
+Later on we'll need to find the derivatives of these Lagrange functions at the quadrature points, so we'll include that as well.
+
+#+BEGIN_SRC python
+class LagrangeElement:
+    def __init__(self):
+        pass
+
+    def basis_functions(self):
+        pass
+
+    def basis_gradients(self):
+        pass
+#+END_SRC
+
 
 * References
 #+print_bibliography:

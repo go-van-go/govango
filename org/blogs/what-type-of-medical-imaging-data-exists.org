@@ -67,6 +67,9 @@ That data comes in 2D images (often ~.png~ files) and is often pretty blurry (se
 #+ATTR_HTML: :alt neonatal ultrasound data from a study be Mahmood Alzubaidi et al. :class blog-image 
 [[../../public/neonatal-ultrasound.png]]
 
+* How about 3D Models of the brain?
+These exist, and they generally come from data from OpenNEURO. The ~.nii~ files are combined to make a 3D model.
+
 * References
 #+print_bibliography:
 
