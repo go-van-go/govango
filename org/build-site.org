@@ -35,8 +35,42 @@
        ;; Now run org-publish-project to publish
        ;; Generate the site output
        ;;(org-publish-all t)
+
+(setq org-html-preamble 
+ "<nav>
+    <!-- Checkbox for toggling menu -->
+    <input type=\"checkbox\" id=\"check\">
+    <!-- Menu icon -->
+    <label for=\"check\" class=\"checkbtn\">
+      <i class=\"fas fa-bars\"></i>
+    </label>
+    <!-- Site logo -->
+    <label class=\"logo\"><a href=\"/index.html\">Go Van Go</a></label>
+    <!-- Navigation links -->
+    <ul class=\"navbar-ul\">
+      <li><a target=\"_self\" class=\"active\" href=\"/index.html\">Home</a></li>
+      <li><a target=\"_self\" href=\"/about.html\">About</a></li>
+      <li><a target=\"_self\" href=\"/blog.html\">Blog</a></li>
+      <li><a target=\"_self\" href=\"/contact.html\">Contact</a></li>
+    </ul>
+  </nav>")
+
+;; website footer
+(setq org-html-postamble
+ "<footer>
+   <p>Go Van Go!</p>
+   <a href=\"https://github.com/go-van-go\" target=\"_blank\" rel=\"noopener noreferrer\">
+     <i class=\"fa-brands fa-github githubfooter\"></i>
+   </a>
+</footer>")
+
 #+END_SRC
 
 #+RESULTS:
-| go-van-go | :recursive | t | :base-directory | ~/writing/govango/govango/org/ | :publishing-function | org-html-publish-to-html | :exclude | build-site\.org\ | blogs/blog-styles\.org | :base-extension | org | :publishing-directory | ~/writing/govango/govango/ | :headline-levels | 4 | :auto-preamble | t | :with-toc | nil | :with-latex | t | :section-numbers | nil |
+: <footer>
+:    <p>Go Van Go!</p>
+:    <a href="https://github.com/go-van-go" target="_blank" rel="noopener noreferrer">
+:      <i class="fa-brands fa-github githubfooter"></i>
+:    </a>
+: </footer>
 
