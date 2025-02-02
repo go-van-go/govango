@@ -138,7 +138,7 @@ li {
  * *******************************************************/
 mjx-container {
   min-width: 0em !important;
-  padding: 5px 0 5px 0;
+  padding: 3px 0 3px 0;
   display: inline-grid;
   overflow-x: auto;
   overflow-y: hidden;
@@ -535,6 +535,14 @@ footer {
   h2 {
     font-size: 1.5em;
   }
+
+  /* *******************************************************
+   *                 SOURCE BLOCK SRC (MOBILE)
+   * *******************************************************/
+  .org-src-container {
+    font-size:12px;
+  }
+
 /* *******************************************************
  *                    BLOCKQUOTE (MOBILE)
  * *******************************************************/
@@ -549,8 +557,15 @@ footer {
   blockquote ul li {
   }
 
+  /* *******************************************************
+   *               REFERENCES / BIBLIOGRAPHY (MOBILE) 
+   * *******************************************************/
+  .csl-bib-body {
+    overflow: scroll;
+  }
+
 /* *******************************************************
- *                    EXTRA BLOCK (MOBILE)
+ *                    EMPHASIS BLOCK (MOBILE)
  * *******************************************************/
   .emphasis {
     padding: 0em 0.5em 1.4em 0;
