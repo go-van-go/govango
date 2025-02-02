@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-01-31 Fri 18:05 -->
+<!-- 2025-02-02 Sun 13:47 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Finite Elements From Scratch (in Python)</title>
@@ -105,7 +105,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org5b0839c">
+<div class="emphasis" id="org20cd6b0">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -121,7 +121,7 @@ A finite element is a set that contains the following three objects:<br>
 All three of these are described by <b>sets</b>, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties. If you are interested in their mathematical properties, you should note that <b>the nodal variables</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P</b>.<br>
 </p>
 
-<div class="extra" id="org81938fc">
+<div class="extra" id="org4f13670">
 <p>
 If \(V\) is a vector space over the real numbers \(\mathbb{R}\), the the <i>dual space of V</i>, denoted \(V'\) is the set of all linear functionals that map \(V \rightarrow \mathbb{R}\). This means all functions that can map a vector in \(V\) to a scalar in \(\mathbb{R}\). This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.<br>
 </p>
@@ -196,7 +196,7 @@ Lets build a <b>3rd order Lagrange element on a tetrahedron</b> in python. I pla
 As we said before, this class should contain a <b>set of points</b> (often called a <b>nodal basis</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orgaf246cd">
+<div class="emphasis" id="orgd092f09">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>

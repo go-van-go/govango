@@ -1,5 +1,8 @@
 * Blogs
 ** Discontinuous Galerkin Method From Scratch (in python)
+:PROPERTIES:
+:CUSTOM_ID:  blog-section
+:END:
 #+BEGIN_EXPORT html
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>

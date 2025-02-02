@@ -54,7 +54,7 @@ body {
   flex: 1;
   width: 100%;
   max-width: 60em; /* Restrict the width to a maximum of 60em */
-  padding: 0 1em; /* Add some padding for small screens */
+  padding: 0 0.5em; /* Add some padding for small screens */
 }
 
 .outline-2 {
@@ -131,10 +131,22 @@ li {
   background-color: var(--nord-1); /* Polar Night */
   font-size: 16px;
   border-radius: 10px;
+  overflow: auto;
 }
 /* *******************************************************
- *                     SOURCE(SRC) BLOCKS 
+ *                     MATHJAX MATH LATEX 
  * *******************************************************/
+mjx-container {
+  min-width: 0em !important;
+  padding-left: 0;
+  display: inline-grid;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+mjx-table {
+  margin-left: 0px !important;
+}
 
 /* *******************************************************
  *                     QUOTE BLOCKS 
@@ -156,7 +168,6 @@ blockquote p {
 blockquote ul {
 }
 blockquote ul li {
-  font-size: 1.3em;
 }
 
 /* *******************************************************
@@ -165,7 +176,7 @@ blockquote ul li {
 .emphasis {
   margin:30px auto 20px auto;
   font-style:italic;
-  padding:1em 20px 1.6em 40px;
+  padding:0em 20px 1.6em 0px;
   border-left:8px solid var(--nord-10) ;
   line-height:1;
   position: relative;
@@ -173,13 +184,14 @@ blockquote ul li {
   border-radius: 10px;
 }
 .emphasis p {
-  padding-top: 0;
+  padding-top: 1em;
+  padding-left: 1em;
 }
 .emphasis ul {
   margin-left: 1em;
 }
-.emphasis ul li {
-  font-size: 1.3em;
+.emphasis ol {
+  margin-left: 1em;
 }
 
 /* *******************************************************
@@ -189,7 +201,7 @@ blockquote ul li {
   width:100%;
   margin:30px auto 20px auto;
   font-style:italic;
-  padding:1em 20px 1.6em 0;
+  padding:0em 20px 1.6em 0;
   border-left:8px solid var(--nord-15) ;
   line-height:1;
   position: relative;
@@ -197,15 +209,11 @@ blockquote ul li {
   border-radius: 10px;
 }
 .extra p {
-  padding-top: 0;
+  padding-top: 1em;
   padding-left: 1em;
 }
 .extra ul {
   margin-left: 1em;
-}
-}
-.extra ul li {
-  font-size: 1.3em;
 }
 
 /* *******************************************************
@@ -357,7 +365,7 @@ ul {
 
 /* Link styling */
 .blog-links {
-  color: var(--nord-10);
+  color: var(--nord-8);
   text-decoration: none; /* Ensures links remain without underline */
   font-size: 1em;
   font-weight: 200;
@@ -365,6 +373,15 @@ ul {
 
 .blog-links:hover {
   color: var(--nord-4);
+  background-color: var(--nord-0);
+  border-radius: 3px;
+}
+
+#text-blog-section {
+  background-color: var(--nord-1);
+  border-radius: 10px;
+  margin-top: 1em;
+  padding-bottom: 1em;
 }
 
 /* *******************************************************
@@ -440,12 +457,18 @@ footer {
     font-size: 16px;
     color: var(--nord-5); /* Light text for smaller screens */
   }
+  .hero-latex {
+    font-size: 1.5em;
+  }
 }
 
 /* *******************************************************
  *                     MEDIA: PHONE 
  * *******************************************************/
 @media (max-width: 890px) {
+  body {
+    font-size: 14px;
+  }
   .checkbtn {
     display: block;
   }
@@ -493,9 +516,13 @@ footer {
    *                     HEADERS (MOBILE) 
    * *******************************************************/
   h1 {
-    font-size: 2em;
+    font-size: 1.8em;
   }
-  
+
+  .title {
+    line-height: 1em;
+  }
+
   .subtitle {
     font-size: 0.66em;
   }
@@ -509,20 +536,41 @@ footer {
     font-size: 1.5em;
   }
 /* *******************************************************
- *                    BLOCKQUOTE 
+ *                    BLOCKQUOTE (MOBILE)
  * *******************************************************/
   blockquote{
     width:100%;
     margin:10px auto 10px auto;
-    padding: 0.5em 10px 1em 0;
+    padding: 0.5em 0.5em 1em 0;
   }
   blockquote ul {
     margin-left: 10px;
   }
   blockquote ul li {
-    font-size: 1em;
   }
 
+/* *******************************************************
+ *                    EXTRA BLOCK (MOBILE)
+ * *******************************************************/
+  .emphasis {
+    padding: 0em 0.5em 1.4em 0;
+  }
+  .emphasis p {
+    padding-left: 0.5em;
+  }
+  .emphasis ol {
+    margin-left: 0.4em;
+  }
+/* *******************************************************
+ *                    EXTRA BLOCK (MOBILE)
+ * *******************************************************/
+  .extra {
+    padding:0em 0.5em 1.4em 0;
+  }
+  .extra p {
+    padding-top: 1em;
+    padding-left: 0.5em;
+  }
 }
 
 /* *******************************************************

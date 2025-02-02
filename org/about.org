@@ -1,1 +1,7 @@
 * About 
+A place to put my ideas about numerical simulations, medical imaging, building software, and more.
+
+The ideas are my own and my sources are cited. There is no AI generated content on this website. 
+
+
+/tags: numerical simulations, high performance computing, finite element method, full waveform inversion, medical imaging, discontinuous Galerkin method, hyperbolic partial differential equations (PDEs), wave simulations, software architecture, optimization methods, python, open source software/
