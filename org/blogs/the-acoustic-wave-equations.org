@@ -8,6 +8,7 @@
 \nabla^2 p - \frac{1}{c^2} \frac{\delta^2 p}{\delta t^2} = 0
 \end{equation*}
 #+HTML:</div>
+#+ATTR_HTML: :class hero-image-caption
 Where $p$ is the acoustic pressure and $c$ is the wavespeed. This is the /general/ form of the linear acoustic wave equation ... but maybe not the one we care about.
 
 * Article Motivation
@@ -29,12 +30,12 @@ Each of these papers is conceptualizing the acoustic wave propagation problem us
 
 * Example Equations
 ** 3D anisotropic variable density visco-acoustic wave equation
-\begin{equation}
+\begin{equation*}
 \rho(\mathbf{x}) \frac{\partial^2 p}{\partial t^2} 
 - \nabla \cdot \left( \mathbf{C}(\mathbf{x}) \nabla p \right) 
 + \eta(\mathbf{x}) * \frac{\partial p}{\partial t} 
 = s(\mathbf{x}, t)
-\end{equation}
+\end{equation*}
 - $p=p(x,t)$ is the acoustic pressure,
 - $\rho(x)\rho(x)$ is the spatially varying density,
 - $C(x)C(x)$ is the anisotropic stiffness tensor,
@@ -50,11 +51,11 @@ However, this code is locked behind a commercial paywall, so I can't see exactly
 *Conclusion*: Pick this model if you work at Imperial College London and you are interested only in linear phenomenon. 
 
 ** Westervelt equation
-\begin{equation}
+\begin{equation*}
 \nabla^2 p - \frac{1}{c^2} \frac{\partial^2 p}{\partial t^2} 
 + \frac{\delta}{c^4} \frac{\partial^3 p}{\partial t^3} 
 = \frac{\beta}{\rho c^4} \frac{\partial^2 p^2}{\partial t^2}
-\end{equation}
+\end{equation*}
 
 I found this equation in a paper written by a PhD student who was trying to incorporate nonlinear effects into their FWI algorithm [cite:@shultzman2022nonlinear]. They weren't specifically trying to image the brain here.
 
@@ -65,12 +66,12 @@ This is the first paper I've seen insist that we should incorporate nonlinear ef
 *Conclusion*: Seems like a pretty good argument for including nonlinear effects.
 
 ** Linear acoustic wave equation written as a conservative system of equations
-\begin{equation}
+\begin{equation*}
 \begin{aligned}
     && \frac{1}{K} \frac{\partial p}{\partial t} = -\nabla \cdot \mathbf{v} \\
     && \rho \frac{\partial \mathbf{v}}{\partial t} = -\nabla p + \mathbf{f} \\
 \end{aligned}
-\end{equation}
+\end{equation*}
 - $p$ is the pressure
 - $\mathbf{v} = (v_1, v_2, v_3)$ is the particle velocity
 - $\rho$ is the mass density

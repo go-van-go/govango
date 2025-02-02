@@ -2,6 +2,7 @@
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
 #+HTML_HEAD: <script type="module" src="../assets/js/navbar.js"></script>
+#+HTML_HEAD: <script type="module" src="../assets/js/main.js"></script>
 #+HTML_HEAD: <base target="_blank">
 #+bibliography: references.bib
 #+cite_export: csl ./citation-style.csl
