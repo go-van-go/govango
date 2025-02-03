@@ -137,7 +137,7 @@ li {
  *                     MATHJAX MATH LATEX 
  * *******************************************************/
 mjx-container {
-  min-width: 0em !important;
+  min-width: 9px; !important;
   display: inline-grid !important;
   overflow-x: auto;
   overflow-y: hidden;
