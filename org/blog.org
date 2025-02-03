@@ -7,7 +7,7 @@
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>
 <li><a class="blog-links" href="/blogs/the-acoustic-wave-equations.html">The acoustic wave equation</a></li>
-<li><a class="blog-links" href="/blogs/finite-elements-from-scratch-in-python.html">Finite elements from scratch, (in python)</a></li>
+<li><a class="blog-links" href="/blogs/finite-element-method-from-scratch-in-python-the-element.html">Finite elements from scratch, (in python)</a></li>
 <li><a class="blog-links" href="/blogs/what-type-of-medical-imaging-data-exists.html">What type of medical imaging data exists?</a></li>
 </ul>
 #+END_EXPORT
