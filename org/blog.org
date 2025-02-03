@@ -5,9 +5,28 @@
 :END:
 #+BEGIN_EXPORT html
 <ul class="blog-list">
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">DG from scratch - The Finite Element</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-mapping-reference-to-physical.html">DG from scratch - Mapping from Reference Space to Physical Space</a></li>
+</ul>
+#+END_EXPORT
+
+** Numerical Simulations
+:PROPERTIES:
+:CUSTOM_ID:  blog-section
+:END:
+#+BEGIN_EXPORT html
+<ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>
 <li><a class="blog-links" href="/blogs/the-acoustic-wave-equations.html">The acoustic wave equation</a></li>
-<li><a class="blog-links" href="/blogs/finite-element-method-from-scratch-in-python-the-element.html">Finite elements from scratch, (in python)</a></li>
+</ul>
+#+END_EXPORT
+
+** Medical Imaging Technology 
+:PROPERTIES:
+:CUSTOM_ID:  blog-section
+:END:
+#+BEGIN_EXPORT html
+<ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-type-of-medical-imaging-data-exists.html">What type of medical imaging data exists?</a></li>
 </ul>
 #+END_EXPORT

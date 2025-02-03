@@ -1,5 +1,5 @@
 #+SETUPFILE: ./blog-styles.org
-#+TITLE: Finite Element Method From Scratch (in Python) - The Element
+#+TITLE: DG Method From Scratch (in Python) - The Element
 #+SUBTITLE: and how to pick the right one for your simulation 
 #+HTML: <p class="date"><i>last update: Feb 3, 2025</i></p>
 

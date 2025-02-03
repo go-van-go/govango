@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-03 Mon 15:50 -->
+<!-- 2025-02-03 Mon 18:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Finite Element Method From Scratch (in Python) - The Element</title>
+<title>DG Method From Scratch (in Python) - The Element</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
@@ -66,21 +66,21 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">Finite Element Method From Scratch (in Python) - The Element
+<h1 class="title">DG Method From Scratch (in Python) - The Element
 <br>
 <span class="subtitle">and how to pick the right one for your simulation</span>
 </h1>
 <p class="date"><i>last update: Feb 3, 2025</i></p>
 
 
-<div id="orgcb7f417" class="figure">
+<div id="org6814aae" class="figure">
 <p><img src="../../public/3x3lagrange-grid.png" alt="Visualzations of simple Lagrage elements with optimized quadrature points" class="hero-image"><br>
 </p>
 <p><span class="figure-number">Figure 1: </span>Examples of simple Lagrage elements with optimized quadrature points (shown in blue)</p>
 </div>
-<div id="outline-container-org339e755" class="outline-2">
-<h2 id="org339e755">Article Motivation</h2>
-<div class="outline-text-2" id="text-org339e755">
+<div id="outline-container-org8d5de52" class="outline-2">
+<h2 id="org8d5de52">Article Motivation</h2>
+<div class="outline-text-2" id="text-org8d5de52">
 <blockquote>
 <ul class="org-ul">
 <li>What is a finite element?<br></li>
@@ -91,9 +91,9 @@
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orge059858" class="outline-2">
-<h2 id="orge059858">What is a finite element?</h2>
-<div class="outline-text-2" id="text-orge059858">
+<div id="outline-container-org6ad85ea" class="outline-2">
+<h2 id="org6ad85ea">What is a finite element?</h2>
+<div class="outline-text-2" id="text-org6ad85ea">
 <p>
 <b>Note</b>: <i>were talking about specific elements that are used in finite element analysis (FEA), not the finite element method (FEM) as a whole.</i><br>
 </p>
@@ -106,7 +106,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org4a9eecd">
+<div class="emphasis" id="orgf6c8b34">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -122,7 +122,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org3724b7d">
+<div class="extra" id="org455f5e7">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -146,9 +146,9 @@ However, other elements are not so simple. Take the <b>Nédélec</b> element for
 </p>
 </div>
 </div>
-<div id="outline-container-orgd390994" class="outline-2">
-<h2 id="orgd390994">What types of finite elements exist?</h2>
-<div class="outline-text-2" id="text-orgd390994">
+<div id="outline-container-org32298b0" class="outline-2">
+<h2 id="org32298b0">What types of finite elements exist?</h2>
+<div class="outline-text-2" id="text-org32298b0">
 <p>
 A lot.<br>
 </p>
@@ -158,32 +158,32 @@ Check out <a href="https://defelement.org/elements/index.html">DefElement</a> fo
 </p>
 </div>
 </div>
-<div id="outline-container-org86a06b4" class="outline-2">
-<h2 id="org86a06b4">How do I find out which element I need?</h2>
-<div class="outline-text-2" id="text-org86a06b4">
+<div id="outline-container-org7ccdd2b" class="outline-2">
+<h2 id="org7ccdd2b">How do I find out which element I need?</h2>
+<div class="outline-text-2" id="text-org7ccdd2b">
 <p>
 There are some questions you can ask to narrow it down:<br>
 </p>
 </div>
-<div id="outline-container-org96283c7" class="outline-3">
-<h3 id="org96283c7">What function space do you need?</h3>
-<div class="outline-text-3" id="text-org96283c7">
+<div id="outline-container-orgbd8e9ee" class="outline-3">
+<h3 id="orgbd8e9ee">What function space do you need?</h3>
+<div class="outline-text-3" id="text-orgbd8e9ee">
 <p>
 Maxwell's equations, for example, require a curl conforming element (the curl of the field has to be continuous). <b>Nédélec</b> elements would be a great first choice.<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org04b4f18" class="outline-3">
-<h3 id="org04b4f18">What type of mesh are you using?</h3>
-<div class="outline-text-3" id="text-org04b4f18">
+<div id="outline-container-org20d7cc1" class="outline-3">
+<h3 id="org20d7cc1">What type of mesh are you using?</h3>
+<div class="outline-text-3" id="text-org20d7cc1">
 <p>
 A tetrahedral <a href="https://govango.org/blogs/what-is-a-computational-mesh">mesh</a> requires tetrahedral elements. <b>Lagrange</b> elements are a perfect first choice for tetrahedral elements with scalar unknowns.<br>
 </p>
 </div>
 </div>
-<div id="outline-container-org518353e" class="outline-3">
-<h3 id="org518353e">Do you need to reduce computational time?</h3>
-<div class="outline-text-3" id="text-org518353e">
+<div id="outline-container-org462afff" class="outline-3">
+<h3 id="org462afff">Do you need to reduce computational time?</h3>
+<div class="outline-text-3" id="text-org462afff">
 <p>
 If you're using a parallelepiped mesh, <b>serendipity</b> elements might be a good starting choice.<br>
 </p>
@@ -194,10 +194,10 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 </div>
 </div>
 </div>
-<div id="outline-container-org556c042" class="outline-2">
-<h2 id="org556c042">Whats a 3rd order Lagrange element?</h2>
-<div class="outline-text-2" id="text-org556c042">
-<div class="emphasis" id="orgd049b11">
+<div id="outline-container-orgd5a3878" class="outline-2">
+<h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
+<div class="outline-text-2" id="text-orgd5a3878">
+<div class="emphasis" id="org06c26f9">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -218,9 +218,9 @@ That means that we have a choice of where to evaluate our basis functions. We ca
 </p>
 </div>
 </div>
-<div id="outline-container-orge12443d" class="outline-2">
-<h2 id="orge12443d">3rd order Lagrange element degrees of freedom</h2>
-<div class="outline-text-2" id="text-orge12443d">
+<div id="outline-container-orgf5986a1" class="outline-2">
+<h2 id="orgf5986a1">3rd order Lagrange element degrees of freedom</h2>
+<div class="outline-text-2" id="text-orgf5986a1">
 <p>
 A common way of finding the degrees of freedom on a 3rd order Lagrange element is to choose equidistant points. Unfortunately, this can often cause unwanted oscillations in the solution due to Runge's phenomenon.<br>
 </p>
@@ -242,9 +242,9 @@ For three dimensions the best quadrature points I have seen were created by Tobi
 </p>
 </div>
 </div>
-<div id="outline-container-orga86defd" class="outline-2">
-<h2 id="orga86defd">Python Code</h2>
-<div class="outline-text-2" id="text-orga86defd">
+<div id="outline-container-org62f7412" class="outline-2">
+<h2 id="org62f7412">Python Code</h2>
+<div class="outline-text-2" id="text-org62f7412">
 <p>
 Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd order Lagrange element on a tetrahedron</b>.<br>
 </p>
@@ -253,7 +253,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orge9cf41e">
+<div class="emphasis" id="org1fab767">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -316,20 +316,20 @@ Great, now we've got a very simple finite element. Lets plot it to see what it l
 </p>
 </div>
 </div>
-<div id="outline-container-org8003acf" class="outline-2">
-<h2 id="org8003acf">Plotting</h2>
-<div class="outline-text-2" id="text-org8003acf">
+<div id="outline-container-orgade6904" class="outline-2">
+<h2 id="orgade6904">Plotting</h2>
+<div class="outline-text-2" id="text-orgade6904">
 
-<div id="orgdcf83b7" class="figure">
+<div id="org5b384cd" class="figure">
 <p><img src="../../public/lagrange-grid.png" alt="Grid of lagrange elements for various degrees of freedom and polynomial order" class="tall-image"><br>
 </p>
 <p><span class="figure-number">Figure 2: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
 </div>
 </div>
 </div>
-<div id="outline-container-org46f1d0c" class="outline-2">
-<h2 id="org46f1d0c">References</h2>
-<div class="outline-text-2" id="text-org46f1d0c">
+<div id="outline-container-org2a664a8" class="outline-2">
+<h2 id="org2a664a8">References</h2>
+<div class="outline-text-2" id="text-org2a664a8">
 <style>.csl-left-margin{float: left; padding-right: 0em;}
  .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
   <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
