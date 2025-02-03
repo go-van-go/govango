@@ -249,6 +249,7 @@ blockquote ul li {
 }
 .hero-image {
   max-height: 500px;
+  max-width: 100%;
 }
 
 /* *******************************************************
