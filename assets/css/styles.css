@@ -141,6 +141,7 @@ mjx-container {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
+  padding: 4px 1px 4px 1px;
 }
 mjx-table {
   margin-left: 0px !important;
