@@ -227,6 +227,10 @@ blockquote ul li {
 .blog-image{
   width: 75%;
 }
+.tall-image{
+  width: auto;
+  max-height: 600px;
+}
 
 /* *******************************************************
  *                     ORDERED LISTS UL LI 
@@ -242,6 +246,9 @@ blockquote ul li {
  * *******************************************************/
 .hero-image-caption {
   text-align: center;
+}
+.hero-image {
+  max-height: 500px;
 }
 
 /* *******************************************************
@@ -299,7 +306,7 @@ label.logo a:hover {
   color: var(--nord-13); /* Maintain the original color */
   text-decoration: none; /* No decoration */
   background: var(--nord-3); 
-  border-radius: 10px;
+  border-radius: 4px;
 }
 
 /* Prevent color change after clicking */

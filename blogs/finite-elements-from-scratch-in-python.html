@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-02 Sun 19:47 -->
+<!-- 2025-02-03 Mon 15:44 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Finite Elements From Scratch (in Python)</title>
@@ -70,14 +70,14 @@
 <br>
 <span class="subtitle">and how to pick the right one for your simulation</span>
 </h1>
-<p class="date"><i>last update: Jan 30, 2025</i></p>
+<p class="date"><i>last update: Feb 3, 2025</i></p>
 
-<div id="three-js-container"></div>
-<p class="three-js-caption">
-<b>Interactive</b> 3D visualization of a <b>reference tetrahedron</b> for a finite element mesh. <span class="underline"><b>Click and drag</b></span> to move around the mesh.<br>
+
+<div id="org532d119" class="figure">
+<p><img src="../../public/3x3lagrange-grid.png" alt="Visualzations of simple Lagrage elements with optimized quadrature points" class="hero-image"><br>
 </p>
-
-<script type="module" src="/assets/js/reference-tetrahedron.js"></script>
+<p><span class="figure-number">Figure 1: </span>Examples of simple Lagrage elements with optimized quadrature points (shown in blue)</p>
+</div>
 <div id="outline-container-orgaa385df" class="outline-2">
 <h2 id="orgaa385df">Article Motivation</h2>
 <div class="outline-text-2" id="text-orgaa385df">
@@ -106,35 +106,43 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org6a64329">
+<div class="emphasis" id="orgb0cc46f">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
 <ol class="org-ol">
-<li>A volume, \(\mathcal{K}\),  with a piecewise smooth boundary.<br></li>
-<li>A space of basis functions, \(\mathcal{P}\).<br></li>
-<li>A set of nodal variables , \(\mathcal{N} = {N_1, N_2, ..., N_k}\).<br></li>
+<li>A domain, \(\mathcal{T}\), (a subset of \(\mathbb{R}^n\)  with a piecewise smooth boundary.<br></li>
+<li>A space of basis functions, \(\mathcal{V}\).<br></li>
+<li>A set of degrees of freedom, \(\mathcal{N} = {N_1, N_2, ..., N_k}\).<br></li>
 </ol>
 
 </div>
 
 <p>
-All three of these are described by <b>sets</b>, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties. If you are interested in their mathematical properties, you should note that <b>the nodal variables</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P</b>.<br>
+If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org7b808f9">
+<div class="extra" id="orgb6a544e">
 <p>
-If \(V\) is a vector space over the real numbers \(\mathbb{R}\), the the <i>dual space of V</i>, denoted \(V'\) is the set of all linear functionals that map \(V \rightarrow \mathbb{R}\). This means all functions that can map a vector in \(V\) to a scalar in \(\mathbb{R}\). This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.<br>
+<i>What is the dual space of a vector space?</i><br>
 </p>
 
 <p>
-The fact that all the points in \(\mathcal{N}\) form a basis for \(\mathcal{P}\) <br>
+If \(V\) is a vector space over the real numbers \(\mathbb{R}\), then the <i>dual space of V</i>, denoted \(V'\) is the set of all linear functionals that map \(V \rightarrow \mathbb{R}\). This means all functions that can map a vector in \(V\) to a scalar in \(\mathbb{R}\). This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.<br>
 </p>
 
 </div>
 
 <p>
-I find this to be a bit counterintuitive. I tend to think of elements as structures that contain a <b>set of points or nodes</b>, a <b>volume</b> (often a triangle or tetrahedron in 3D) and a <b>set of basis functions</b>.<br>
+If you found the <b>set of degrees of freedom</b> in the definition of a finite element to be confusing, its because this definition is attempting to be as general as possible, and encompass all possible types of finite elements.<br>
+</p>
+
+<p>
+Consider a very simple finite element, a <b>Lagrange</b> element on a tetrahedral mesh. The volume of the element is the reference tetrahedron. The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions <i>at specific points</i>. In this case we can think of the nodal variables as just a set of points on the tetrahedron.<br>
+</p>
+
+<p>
+However, other elements are not so simple. Take the <b>Nédélec</b> element for example, which also works on a tetrahedral mesh. The volume is also a tetrahedron. The space of basis functions is also a finite polynomial space. But the Nédélec element is a <i>H(curl)-conforming element</i>, which means that it ensures the continuity of tangential components of the solution (necessary for electromagnetics simulations for example). To achieve this, the degrees of freedom of the lowest order 3D Nédélec element (of the first kind) are integrals over the edges of the element, of the solution doted with the tangent vector [<a href="#citeproc_bib_item_3">3</a>]<br>
 </p>
 </div>
 </div>
@@ -181,23 +189,71 @@ If you're using a parallelepiped mesh, <b>serendipity</b> elements might be a go
 </p>
 
 <p>
-In my case, I want to simulate ultrasound waves passing through the brain. That's a complex geometry so I want a unstructured tetrahedron mesh. I'm using a linear acoustic wave equation so <b>Lagrange elements</b> will be perfect to start. I can always adapt in the future. Based on this PhD thesis[<a href="#citeproc_bib_item_3">3</a>] I should use 3rd order basis functions for the best bang for my buck.<br>
+In my case, I want to simulate ultrasound waves passing through the brain. That's a complex geometry so I want a unstructured tetrahedron mesh. I'm using a linear acoustic wave equation so <b>Lagrange elements</b> will be perfect to start. I can always adapt in the future. Based on this PhD thesis[<a href="#citeproc_bib_item_4">4</a>] I should start with 3rd order basis functions as they seem to scale the best.<br>
 </p>
 </div>
+</div>
+</div>
+<div id="outline-container-org54f1d0f" class="outline-2">
+<h2 id="org54f1d0f">Whats a 3rd order Lagrange element?</h2>
+<div class="outline-text-2" id="text-org54f1d0f">
+<div class="emphasis" id="org01748bf">
+<p>
+A third order, 3D Lagrange element is defined by the following triplet:<br>
+</p>
+<ol class="org-ol">
+<li>A tetrahedron domain.<br></li>
+<li>A set of polynomial basis functions up to order 3.<br></li>
+<li>A set of points where the basis functions are evaluated.<br></li>
+</ol>
+
+</div>
+
+<p>
+Just to recap (for the sake of rigorous mathematics) the degrees of freedom of this Lagrange element are a set of points where the basis functions are evaluated. These are our unknowns that we will solve for. We can use these to recreate the solution in each cell.<br>
+</p>
+
+<p>
+That means that we have a choice of where to evaluate our basis functions. We can chose whatever <i>quadrature points</i> we want.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org885fe37" class="outline-2">
+<h2 id="org885fe37">3rd order Lagrange element degrees of freedom</h2>
+<div class="outline-text-2" id="text-org885fe37">
+<p>
+A common way of finding the degrees of freedom on a 3rd order Lagrange element is to choose equidistant points. Unfortunately, this can often cause unwanted oscillations in the solution due to Runge's phenomenon.<br>
+</p>
+
+<p>
+Another common choice is to make our basis functions Lagrange functions, and to evaluate them at Gauss-Lobatto<sub>Legendre</sub> (GLL) points. These points are clustered towards the ends of the element, and reduce the spurious oscillations.<br>
+</p>
+
+<p>
+An even better way is to use the <b>Warp and Blend</b> points from Hesthaven and Warburton's book [<a href="#citeproc_bib_item_5">5</a>]. They've found a way to further reduce the oscillations by algorithmically defining the position of each point.<br>
+</p>
+
+<p>
+Theoretically, the best way would be to minimized something called the <i>Lebesgue constant</i> directly. The Lebesgue constant is a measure of the unwanted spurious oscillations that occur as a result of the choice of points. Francesca Rapetti et al did this for polynomial degrees up to 18 <b>in two dimensions</b> in their 2012 paper (see [<a href="#citeproc_bib_item_6">6</a>])<br>
+</p>
+
+<p>
+For three dimensions the best quadrature points I have seen were created by Tobin Isaac (see [<a href="#citeproc_bib_item_7">7</a>]). You can check out the implementation in the link in the references at the bottom of the page. I won't get into it here, but going forward I'll use Isaac's <code>recursive_nodes</code> package to find the nodal positions.<br>
+</p>
 </div>
 </div>
 <div id="outline-container-orgd40b7b9" class="outline-2">
 <h2 id="orgd40b7b9">Python Code</h2>
 <div class="outline-text-2" id="text-orgd40b7b9">
 <p>
-Lets build a <b>3rd order Lagrange element on a tetrahedron</b> in python. I plan to use this code to build simulations using the finite element method (FEM) (specifically the discontinuous Galerkin variation), lets build a class that we can use in a bunch of projects.<br>
+Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd order Lagrange element on a tetrahedron</b>.<br>
 </p>
 
 <p>
-As we said before, this class should contain a <b>set of points</b> (often called a <b>nodal basis</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
+As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orgcabcdb8">
+<div class="emphasis" id="org6faf1ab">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -213,28 +269,61 @@ No. Typically all the calculations are done on a <b>reference element</b>, and t
 </p>
 
 <p>
-<b>Nodal basis</b>: there are more options here again, but we'll go with the Gauss-Lobatto-Legendre (GLL) quadrature points. These help reduce the Runge phenomenon.<br>
+<b>Nodal basis</b>: We're using the optimized points from the <code>recursivenodes</code> code.<br>
 </p>
 
 <p>
-<b>Basis functions</b>: third order Lagrange functions.<br>
+<b>Basis functions</b>: third order Lagrange functions. We'll use <code>scipy</code>'s implementation of the Jacobi polynomials.<br>
 </p>
 
 <p>
-Later on we'll need to find the derivatives of these Lagrange functions at the quadrature points, so we'll include that as well.<br>
+Lets start by creating a reference volume as a python class. We can then import this and use it in our <code>LagrageElement</code> class<br>
 </p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+
+<span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Tetrahedron</span>:
+    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the Tetrahedron</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vertices</span> = np.array([[0, 0, 0],
+                                  [0, 1, 0],
+                                  [0, 0, 1],
+                                  [1, 0, 0]])
+
+</pre>
+</div>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">LagrangeElement</span>:
-    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
-        <span style="color: #81A1C1;">pass</span>
+<pre class="src src-python"><span style="color: #81A1C1;">from</span> reference_domains <span style="color: #81A1C1;">import</span> Tetrahedron
+<span style="color: #81A1C1;">from</span> recursivenodes <span style="color: #81A1C1;">import</span> recursivenodes
 
-    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">basis_functions</span>(<span style="color: #81A1C1;">self</span>):
-        <span style="color: #81A1C1;">pass</span>
-
-    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">basis_gradients</span>(<span style="color: #81A1C1;">self</span>):
-        <span style="color: #81A1C1;">pass</span>
+<span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">LagrangeElement</span>:
+    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>, d, n):
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">d is the dimension, n is the order of the polynomial basis functions</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">d</span> = d
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">n</span> = n
+        
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the domain as an instance of Tetrahedron</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Tetrahedron()
+        
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Generate nodes using recursivenodes</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = recursivenodes(d, n, domain=<span style="color: #A3BE8C;">'unit'</span>)
 </pre>
+</div>
+
+<p>
+Great, now we've got a very simple finite element. Lets plot it to see what it looks like.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgfb462fa" class="outline-2">
+<h2 id="orgfb462fa">Plotting</h2>
+<div class="outline-text-2" id="text-orgfb462fa">
+
+<div id="org2f0b7ac" class="figure">
+<p><img src="../../public/lagrange-grid.png" alt="Grid of lagrange elements for various degrees of freedom and polynomial order" class="tall-image"><br>
+</p>
+<p><span class="figure-number">Figure 2: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
 </div>
 </div>
 </div>
@@ -250,7 +339,19 @@ Later on we'll need to find the derivatives of these Lagrange functions at the q
     <div class="csl-left-margin">2. </div><div class="csl-right-inline">Ciarlet PG. <a href="https://doi.org/10.1137/1.9780898719208">The finite element method for elliptic problems</a>. Society for Industrial and Applied Mathematics; 2002. Available from The finite element method for elliptic problems.</div>
   </div>
   <div class="csl-entry"><a id="citeproc_bib_item_3"></a>
-    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Vandekerckhove S. <a href="https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0">Simulation of wave propagation problems for automated characterisation of material parameters</a>. 2016; Available from Simulation of wave propagation problems for automated characterisation of material parameters.</div>
+    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Logg A, Mardal KA, Wells G, editors. <a href="https://doi.org/10.1007/978-3-642-23099-8">Automated solution of differential equations by the finite element method: The fenics book</a>. 1st ed. Springer Berlin, Heidelberg; 2012. (Lecture notes in computational science and engineering; vol. 84). </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_4"></a>
+    <div class="csl-left-margin">4. </div><div class="csl-right-inline">Vandekerckhove S. <a href="https://kuleuven.limo.libis.be/discovery/search?query=any,contains,LIRIAS1769623&tab=LIRIAS&search_scope=lirias_profile&vid=32KUL_KUL:Lirias&offset=0">Simulation of wave propagation problems for automated characterisation of material parameters</a>. 2016; Available from Simulation of wave propagation problems for automated characterisation of material parameters.</div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_5"></a>
+    <div class="csl-left-margin">5. </div><div class="csl-right-inline">Hesthaven JS, Warburton T. <a href="https://doi.org/10.1007/978-0-387-72067-8">Nodal discontinuous galerkin methods: Algorithms, analysis, and applications</a>. 1st ed. Springer New York, NY; 2008. (Texts in applied mathematics; vol. 54). </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_6"></a>
+    <div class="csl-left-margin">6. </div><div class="csl-right-inline">Rapetti F, Sommariva A, Vianello M. <a href="https://doi.org/https://doi.org/10.1016/j.cam.2011.11.023">On the generation of symmetric lebesgue-like points in the triangle</a>. Journal of computational and applied mathematics. 2012;236(18):4925–32. Available from On the generation of symmetric lebesgue-like points in the triangle.</div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_7"></a>
+    <div class="csl-left-margin">7. </div><div class="csl-right-inline">Isaac T. Recursive, parameter-free, explicitly defined interpolation nodes for simplices. 2020. </div>
   </div>
 </div>
 </div>

@@ -1,18 +1,12 @@
 #+SETUPFILE: ./blog-styles.org
 #+TITLE: Finite Elements From Scratch (in Python)
 #+SUBTITLE: and how to pick the right one for your simulation 
-#+HTML: <p class="date"><i>last update: Jan 30, 2025</i></p>
+#+HTML: <p class="date"><i>last update: Feb 3, 2025</i></p>
 
-#+NAME: reference-tetrahedron
-#+BEGIN_EXPORT html
-<div id="three-js-container"></div>
-#+END_EXPORT
-#+ATTR_HTML: :class three-js-caption
-*Interactive* 3D visualization of a *reference tetrahedron* for a finite element mesh. _*Click and drag*_ to move around the mesh.
-
-#+BEGIN_EXPORT html
-<script type="module" src="/assets/js/reference-tetrahedron.js"></script>
-#+END_EXPORT
+#+CAPTION: Examples of simple Lagrage elements with optimized quadrature points (shown in blue)
+#+NAME: threexthree-lagrange-grid
+#+ATTR_HTML: :alt Visualzations of simple Lagrage elements with optimized quadrature points :class hero-image 
+[[../../public/3x3lagrange-grid.png]]
 
 * Article Motivation 
 #+BEGIN_QUOTE
@@ -31,20 +25,24 @@ The rigous mathematical definition is usually taken from /The Mathematical Theor
 
 #+BEGIN_emphasis
 A finite element is a set that contains the following three objects:
-1. A volume, $\mathcal{K}$,  with a piecewise smooth boundary.
-2. A space of basis functions, $\mathcal{P}$.
-3. A set of nodal variables , $\mathcal{N} = {N_1, N_2, ..., N_k}$.
+1. A domain, $\mathcal{T}$, (a subset of $\mathbb{R}^n$  with a piecewise smooth boundary.
+2. A space of basis functions, $\mathcal{V}$.
+3. A set of degrees of freedom, $\mathcal{N} = {N_1, N_2, ..., N_k}$.
 #+END_emphasis
 
-All three of these are described by *sets*, hence the curly letters. Honestly, the fact that they are sets doesn't really concern me, because my goal is to code them up, not study their mathematical properties. If you are interested in their mathematical properties, you should note that *the nodal variables*, $\mathcal{N}$ *form a basis for the dual space of P*.
+If you are interested in their mathematical properties, you should note that *the degrees of freedom*, $\mathcal{N}$ *form a basis for the dual space of P (called $\mathcal{P'}$)*.
 
 #+BEGIN_extra
-If $V$ is a vector space over the real numbers $\mathbb{R}$, the the /dual space of V/, denoted $V'$ is the set of all linear functionals that map $V \rightarrow \mathbb{R}$. This means all functions that can map a vector in $V$ to a scalar in $\mathbb{R}$. This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.
+/What is the dual space of a vector space?/
 
-The fact that all the points in $\mathcal{N}$ form a basis for $\mathcal{P}$ 
+If $V$ is a vector space over the real numbers $\mathbb{R}$, then the /dual space of V/, denoted $V'$ is the set of all linear functionals that map $V \rightarrow \mathbb{R}$. This means all functions that can map a vector in $V$ to a scalar in $\mathbb{R}$. This includes things like summing all the elements, or finding the mean, or projecting the vector onto an axis.
 #+END_extra
 
-I find this to be a bit counterintuitive. I tend to think of elements as structures that contain a *set of points or nodes*, a *volume* (often a triangle or tetrahedron in 3D) and a *set of basis functions*.
+If you found the *set of degrees of freedom* in the definition of a finite element to be confusing, its because this definition is attempting to be as general as possible, and encompass all possible types of finite elements.
+
+Consider a very simple finite element, a *Lagrange* element on a tetrahedral mesh. The volume of the element is the reference tetrahedron. The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions /at specific points/. In this case we can think of the nodal variables as just a set of points on the tetrahedron.
+
+However, other elements are not so simple. Take the *Nédélec* element for example, which also works on a tetrahedral mesh. The volume is also a tetrahedron. The space of basis functions is also a finite polynomial space. But the Nédélec element is a /H(curl)-conforming element/, which means that it ensures the continuity of tangential components of the solution (necessary for electromagnetics simulations for example). To achieve this, the degrees of freedom of the lowest order 3D Nédélec element (of the first kind) are integrals over the edges of the element, of the solution doted with the tangent vector [cite:@logg2012fenics]
 
 * What types of finite elements exist?
 A lot.
@@ -63,12 +61,35 @@ A tetrahedral [[https://govango.org/blogs/what-is-a-computational-mesh][mesh]] r
 ** Do you need to reduce computational time?
 If you're using a parallelepiped mesh, *serendipity* elements might be a good starting choice.
 
-In my case, I want to simulate ultrasound waves passing through the brain. That's a complex geometry so I want a unstructured tetrahedron mesh. I'm using a linear acoustic wave equation so *Lagrange elements* will be perfect to start. I can always adapt in the future. Based on this PhD thesis[cite:@vandekerckhove2016simulation] I should use 3rd order basis functions for the best bang for my buck.
+In my case, I want to simulate ultrasound waves passing through the brain. That's a complex geometry so I want a unstructured tetrahedron mesh. I'm using a linear acoustic wave equation so *Lagrange elements* will be perfect to start. I can always adapt in the future. Based on this PhD thesis[cite:@vandekerckhove2016simulation] I should start with 3rd order basis functions as they seem to scale the best.
+
+* Whats a 3rd order Lagrange element?
+#+BEGIN_emphasis
+A third order, 3D Lagrange element is defined by the following triplet:
+1. A tetrahedron domain.
+2. A set of polynomial basis functions up to order 3.
+3. A set of points where the basis functions are evaluated.
+#+END_emphasis
+
+Just to recap (for the sake of rigorous mathematics) the degrees of freedom of this Lagrange element are a set of points where the basis functions are evaluated. These are our unknowns that we will solve for. We can use these to recreate the solution in each cell.
+
+That means that we have a choice of where to evaluate our basis functions. We can chose whatever /quadrature points/ we want.
+
+* 3rd order Lagrange element degrees of freedom
+A common way of finding the degrees of freedom on a 3rd order Lagrange element is to choose equidistant points. Unfortunately, this can often cause unwanted oscillations in the solution due to Runge's phenomenon.
+
+Another common choice is to make our basis functions Lagrange functions, and to evaluate them at Gauss-Lobatto_Legendre (GLL) points. These points are clustered towards the ends of the element, and reduce the spurious oscillations.
+
+An even better way is to use the *Warp and Blend* points from Hesthaven and Warburton's book [cite:@hesthaven2008nodal]. They've found a way to further reduce the oscillations by algorithmically defining the position of each point.
+
+Theoretically, the best way would be to minimized something called the /Lebesgue constant/ directly. The Lebesgue constant is a measure of the unwanted spurious oscillations that occur as a result of the choice of points. Francesca Rapetti et al did this for polynomial degrees up to 18 *in two dimensions* in their 2012 paper (see [cite:@rapetii2012generation]) 
+
+For three dimensions the best quadrature points I have seen were created by Tobin Isaac (see [cite:@isaac2020recursive]). You can check out the implementation in the link in the references at the bottom of the page. I won't get into it here, but going forward I'll use Isaac's ~recursive_nodes~ package to find the nodal positions.
 
 * Python Code
-Lets build a *3rd order Lagrange element on a tetrahedron* in python. I plan to use this code to build simulations using the finite element method (FEM) (specifically the discontinuous Galerkin variation), lets build a class that we can use in a bunch of projects.
+Lets build a python class callsed ~LagrangeElement~ for a *3rd order Lagrange element on a tetrahedron*. 
 
-As we said before, this class should contain a *set of points* (often called a *nodal basis*) some *basis functions* (in this case, 3rd order Lagrange basis functions), an it should be expressed on some *volume*.
+As we said before, this class should contain a *set of points* (often called  the *degrees of freedom*) some *basis functions* (in this case, 3rd order Lagrange basis functions), an it should be expressed on some *volume*.
 
 #+BEGIN_emphasis
 /Do I have to make a separate element for each cell in my mesh?/
@@ -78,23 +99,48 @@ No. Typically all the calculations are done on a *reference element*, and then m
 
 *Volume*: The reference tetrahedron for an unstructured mesh, with vertices at $(0,0,0), (0,1,0), (0,0,1), (1,0,0)$.
 
-*Nodal basis*: there are more options here again, but we'll go with the Gauss-Lobatto-Legendre (GLL) quadrature points. These help reduce the Runge phenomenon.
+*Nodal basis*: We're using the optimized points from the ~recursivenodes~ code.
 
-*Basis functions*: third order Lagrange functions.
+*Basis functions*: third order Lagrange functions. We'll use ~scipy~'s implementation of the Jacobi polynomials.
 
-Later on we'll need to find the derivatives of these Lagrange functions at the quadrature points, so we'll include that as well.
+Lets start by creating a reference volume as a python class. We can then import this and use it in our ~LagrageElement~ class
+#+BEGIN_SRC python
+import numpy as np
+
+class Tetrahedron:
+    def __init__(self):
+        # Define the vertices of the Tetrahedron
+        self.vertices = np.array([[0, 0, 0],
+                                  [0, 1, 0],
+                                  [0, 0, 1],
+                                  [1, 0, 0]])
+
+#+END_SRC
 
 #+BEGIN_SRC python
+from reference_domains import Tetrahedron
+from recursivenodes import recursivenodes
+
 class LagrangeElement:
-    def __init__(self):
-        pass
-
-    def basis_functions(self):
-        pass
-
-    def basis_gradients(self):
-        pass
+    def __init__(self, d, n):
+        # d is the dimension, n is the order of the polynomial basis functions
+        self.d = d
+        self.n = n
+        
+        # Initialize the domain as an instance of Tetrahedron
+        self.domain = Tetrahedron()
+        
+        # Generate nodes using recursivenodes
+        self.nodes = recursivenodes(d, n, domain='unit')
 #+END_SRC
+
+Great, now we've got a very simple finite element. Lets plot it to see what it looks like.
+
+* Plotting
+#+CAPTION: Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the ~plotting~ directory of the corresponding code [[https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python][in the github repo]]
+#+NAME: 3x5-lagrange-element-grid
+#+ATTR_HTML: :alt Grid of lagrange elements for various degrees of freedom and polynomial order :class tall-image
+[[../../public/lagrange-grid.png]]
 
 
 * References
