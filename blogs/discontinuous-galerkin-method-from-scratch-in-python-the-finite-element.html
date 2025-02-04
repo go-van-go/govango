@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-03 Mon 18:46 -->
+<!-- 2025-02-04 Tue 16:20 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - The Element</title>
@@ -106,7 +106,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="orgc088b64">
+<div class="emphasis" id="org08f73db">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -122,7 +122,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org7f8eb73">
+<div class="extra" id="org29c0483">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -197,7 +197,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="orgc7fec4a">
+<div class="emphasis" id="orgd32aaff">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -253,7 +253,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="org93b0ad0">
+<div class="emphasis" id="org824c0ea">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -282,6 +282,13 @@ Lets start by creating a reference volume as a python class. We can then import 
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
 
+<span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Triangle</span>:
+    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the Tetrahedron</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vertices</span> = np.array([[0, 0],
+                                  [0, 1],
+                                  [1, 0]])
+
 <span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Tetrahedron</span>:
     <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the Tetrahedron</span>
@@ -304,7 +311,12 @@ Lets start by creating a reference volume as a python class. We can then import 
         <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">n</span> = n
         
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the domain as an instance of Tetrahedron</span>
-        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Tetrahedron()
+        <span style="color: #81A1C1;">if</span> d == 2:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Triangle()
+        <span style="color: #81A1C1;">elif</span> d == 3:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Tetrahedron()
+        <span style="color: #81A1C1;">else</span>:
+            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(<span style="color: #A3BE8C;">"Incorrect element dimention (d). Should be 2 or 3"</span>) 
         
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Generate nodes using recursivenodes</span>
         <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = recursivenodes(d, n, domain=<span style="color: #A3BE8C;">'unit'</span>)

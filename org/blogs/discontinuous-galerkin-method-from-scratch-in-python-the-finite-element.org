@@ -107,6 +107,13 @@ Lets start by creating a reference volume as a python class. We can then import 
 #+BEGIN_SRC python
 import numpy as np
 
+class Triangle:
+    def __init__(self):
+        # Define the vertices of the Tetrahedron
+        self.vertices = np.array([[0, 0],
+                                  [0, 1],
+                                  [1, 0]])
+
 class Tetrahedron:
     def __init__(self):
         # Define the vertices of the Tetrahedron
@@ -128,7 +135,12 @@ class LagrangeElement:
         self.n = n
         
         # Initialize the domain as an instance of Tetrahedron
-        self.domain = Tetrahedron()
+        if d == 2:
+            self.domain = Triangle()
+        elif d == 3:
+            self.domain = Tetrahedron()
+        else:
+            raise Exception("Incorrect element dimention (d). Should be 2 or 3") 
         
         # Generate nodes using recursivenodes
         self.nodes = recursivenodes(d, n, domain='unit')

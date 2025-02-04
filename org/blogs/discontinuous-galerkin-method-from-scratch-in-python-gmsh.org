@@ -1,0 +1,339 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: DG Method From Scratch (in Python) - Gmsh 
+#+SUBTITLE: Making a mesh and extracting information
+#+HTML: <p class="date"><i>last update: Feb 4, 2025</i></p>
+
+* Article Motivation 
+#+BEGIN_QUOTE
+- How do you make a mesh on Gmsh?
+- How do I loop over elements or faces?
+- How do I get the normal to each face?
+- How do I find the boundary nodes and faces?
+- Create a python class called ~Mesh~ with functions that return important information about the Gmsh mesh.
+#+END_QUOTE
+
+* Introduction
+Gmsh is an *open source* 3D finite element mesh generator [cite:@geuzaine2009gmsh]. Let's use it to produce triangle and tetrahedral meshes. Then, we'll extract all the information we need to do a finite element simulation (like vertices for each cell, normal to each face, boundary faces, which elements are touching and on which face).
+
+* Creating a 2D and 3D mesh in Gmsh
+Let's create some meshes that we can use as examples.
+
+We'll start with a 2D mesh. We'll make a simple ellipse and we'll do it using Gmsh's built in geometry kernel. We'll save the following as ~2d-ellipse.geo~
+
+#+BEGIN_SRC gmsh
+cm = 1e-02; // centimeters
+a = 6 * cm; // Semi-major axis
+b = 4 * cm; // Semi-minor axis
+Lc = 0.01;  // characteristic cell length 
+
+// Define center and ellipse points
+Point(1) = {0, 0, 0, Lc};
+Point(2) = {a, 0, 0, Lc};
+Point(3) = {0, b, 0, Lc};
+Point(4) = {-a, 0, 0, Lc};
+Point(5) = {0, -b, 0, Lc};
+
+// Define ellipse using center and points
+Ellipse(1) = {2, 1, 3};
+Ellipse(2) = {3, 1, 4};
+Ellipse(3) = {4, 1, 5};
+Ellipse(4) = {5, 1, 2};
+
+// Define surface
+Curve Loop(5) = {1, 2, 3, 4};
+Plane Surface(6) = {5};
+#+END_SRC
+
+We can then run the following code to produce a ~.msh~ file, Gmsh's own file type for storing mesh data.
+
+#+BEGIN_SRC bash
+gmsh -2 2d-ellipse.geo -o 2d-ellipse.msh
+#+END_SRC
+
+Now let's use the /OpenCASCADE/ geometry Kernel that is available using Gmsh's python API. We'll create the following file called ~3d-torus.py~
+
+#+BEGIN_SRC python
+import gmsh
+import sys
+
+# initialize gmsh
+gmsh.initialize(sys.argv)
+
+# Same parameters as 2D problem
+cm = 1e-02;
+a = 6 * cm;
+b = 4 * cm;
+Lc = 0.01;
+
+# Create an ellipse using OpenCASCADE
+ellipse = gmsh.model.occ.addTorus(0, 0, 0, a, b)
+
+# Synchronize the model
+gmsh.model.occ.synchronize();
+
+# Generate a 2D mesh
+gmsh.model.mesh.generate(2)
+
+# Save the mesh as a .msh file
+gmsh.write("3d-torus.msh")
+
+# Run the GUI
+gmsh.fltk.run()
+
+gmsh.finalize()
+#+END_SRC
+
+Running this python file with ~python 3d-torus.py~ will produce our 3D ~.msh~ file.
+
+* Writing a Mesh class in python
+#+BEGIN_emphasis
+Our goal is to create a python class called ~Mesh~ that can easily provide the following information:
+- ~dimension~ - dimension of mesh
+- ~num_elements~ - number of elements in the mesh
+- ~verticies[i]~ - coordinates for vertex ~i~ 
+- ~edges2Elements[i]~ - the elements that include edge ~i~
+- ~faces2Elements[i]~ - the elements that include face ~i~
+- ~elements2Elements[i]~ - the elements adjacent to element ~i~
+- ~normal[i]~ - the normal vector to face ~i~
+- ~jacobians[i]~ - the jacobian matrix of element ~i~ (used for mapping from reference element)
+- ~determinants[i]~ - the determinant of element ~i~'s Jacobian matrix (used for mapping from reference element)
+#+END_emphasis
+We can visualize the mesh using the built in GUI for Gmsh. However, were going to need to get a bunch of the information from Gmsh into numpy, so lets figure out how to do that.
+
+#+BEGIN_extra
+Naming conventions for meshes can vary from person to person. In this cite we'll stick to the following.
+
+A *mesh* has *cells*. 3D cells (tetrahedron in our case) have *faces*, *edges*, and *vertices*. All of these are examples of *entities*.
+
+An *element* refers to a *finite element* which can have quadrature points called *nodes*.
+
+See the posts about [[https://govango.org/blogs/what-is-a-computational-mesh][meshes]] and [[https://govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element][finite elements]] for more information.
+
+Unfortunately Gmsh uses element and node terminology for meshes, so you might see them interchanged at times.
+#+END_extra
+
+The first thing we'll want to do is extract all the vertices and plot them using matplotlib. Lets create a python file called ~mesh-with-matplotlib.py~
+
+Lets get familiar with some of the Gmsh functionality with the following simple code.
+
+#+BEGIN_SRC python
+import gmsh
+import pdb
+
+gmsh.initialize()
+gmsh.open(file_path)
+
+entities = gmsh.model.getEntities() 
+breakpoint()
+#+END_SRC
+
+This puts us into the python debugger where we can start to poke around. Typing ~(PDB) entities~ returns the following:
+#+BEGIN_SRC bash
+[(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 1), (1, 2), (1, 3), (1, 4), (2, 6)] # for 2d-ellipse.msh
+[(0, 1), (1, 1), (1, 2), (2, 1), (3, 1)]  # for 3d-torus.msh 
+#+END_SRC
+
+This is a list of all the entities in the model as ~(dimension,tag)~ pairs.
+
+So ~(0,1)~ means there is a point (zero dimensional object) with a tag of 1.
+
+#+BEGIN_emphasis
+/What is a tag in Gmsh?/
+
+A tag is just a global identification model for the entity. It is strictly positive and, when combined with the dimension, uniquely defines any entity. From the documentation:
+
+- each point must possess a unique tag;
+- each curve must possess a unique tag;
+- each surface must possess a unique tag;
+- each volume must possess a unique tag. 
+#+END_emphasis
+
+Our ~2d-ellipse.msh~ has 5 points, 4 curves, and 1 surface.
+
+Our ~3d-torus.msh~ file has 1 point, 2 curves, 1 surface, and 1 volume.
+
+Using example 2.22 from [[https://gmsh.info/doc/texinfo/gmsh.html#x1][the official gmsh tutorial]], we can print the following information about our ~2d-ellipse.msh~ file.
+
+#+BEGIN_SRC bash
+Info    : Reading '2d-ellipse.msh'...
+Info    : 10 entities
+Info    : 114 nodes
+Info    : 229 elements
+Info    : Done reading '2d-ellipse.msh'
+Entity (0, 1) of type Point
+ - Mesh has 1 nodes and 1 elements
+Entity (0, 2) of type Point
+ - Mesh has 1 nodes and 1 elements
+ - Upward adjacencies: [1 4]
+Entity (0, 3) of type Point
+ - Mesh has 1 nodes and 1 elements
+ - Upward adjacencies: [1 2]
+Entity (0, 4) of type Point
+ - Mesh has 1 nodes and 1 elements
+ - Upward adjacencies: [2 3]
+Entity (0, 5) of type Point
+ - Mesh has 1 nodes and 1 elements
+ - Upward adjacencies: [3 4]
+Entity (1, 1) of type Discrete curve
+ - Mesh has 7 nodes and 8 elements
+ - Upward adjacencies: [6]
+ - Downward adjacencies: [2 3]
+Entity (1, 2) of type Discrete curve
+ - Mesh has 7 nodes and 8 elements
+ - Upward adjacencies: [6]
+ - Downward adjacencies: [3 4]
+Entity (1, 3) of type Discrete curve
+ - Mesh has 7 nodes and 8 elements
+ - Upward adjacencies: [6]
+ - Downward adjacencies: [4 5]
+Entity (1, 4) of type Discrete curve
+ - Mesh has 7 nodes and 8 elements
+ - Upward adjacencies: [6]
+ - Downward adjacencies: [5 2]
+Entity (2, 6) of type Discrete surface
+ - Mesh has 81 nodes and 192 elements
+#+END_SRC
+
+- We can even get the Jacobian of an element using ~gmsh.model.mesh.getJacobians()~
+- We can get all the nodes (vertices) that lie on a boundary using ~gmsh.model.mesh.getElementEdgeNodes~
+- ~gmsh.model.mesh.getElementFaceNodes~ gets the nodes on the faces of entities.
+
+Since ~gmsh.model.mesh.getEdges(edgenodes)~ and ~gmsh.model.mesh.getFaces()~ return in the same order as the elements, we can make a matrix that tells us the connections between edges and elements, and faces and elements.
+
+Using all this information, lets create a file called ~mesh.py~ and in that file well create the following python class called ~Mesh~.
+
+#+BEGIN_SRC python
+import gmsh
+import sys
+
+class Mesh:
+    def __init__(self, msh_file):
+        gmsh.initialize()
+        gmsh.open(msh_file)
+        
+        self.elements2Elements = {}
+        self.edges2Elements = {}
+        self.faces2Elements = {}
+        self.jacobians = {}
+        self.determinants = {}
+        self.num_elements = 0
+        self.vertices = {}
+        self.dimension = gmsh.model.getDimension()
+        
+        self._extract_mesh_info()
+        self._build_edges2Elements()
+        if self.dimension == 3:
+            self._build_faces2Elements()
+        self._build_elements2Elements()
+        self._compute_jacobians()
+        
+        gmsh.finalize()
+
+    def _extract_mesh_info(self):
+        nodeTags, nodeCoords, _ = gmsh.model.mesh.getNodes()
+        self.vertices = {nodeTags[i]: (nodeCoords[3*i], nodeCoords[3*i+1], nodeCoords[3*i+2]) for i in range(len(nodeTags))}
+        
+        if self.dimension == 3:
+            self.elementType = gmsh.model.mesh.getElementType("tetrahedron", 1)
+        else:
+            self.elementType = gmsh.model.mesh.getElementType("triangle", 1)
+        
+        self.elementTags, self.elementNodeTags = gmsh.model.mesh.getElementsByType(self.elementType)
+        self.num_elements = len(self.elementTags)
+
+    def _build_edges2Elements(self):
+        gmsh.model.mesh.createEdges()
+        edgeNodes = gmsh.model.mesh.getElementEdgeNodes(self.elementType)
+        edgeTags, _ = gmsh.model.mesh.getEdges(edgeNodes)
+        
+        for i in range(len(edgeTags)):
+            if edgeTags[i] not in self.edges2Elements:
+                self.edges2Elements[edgeTags[i]] = [self.elementTags[i // (3 if self.dimension == 2 else 6)]]
+            else:
+                self.edges2Elements[edgeTags[i]].append(self.elementTags[i // (3 if self.dimension == 2 else 6)])
+
+    def _build_faces2Elements(self):
+        if self.dimension == 2:
+            return
+        gmsh.model.mesh.createFaces()
+        faceNodes = gmsh.model.mesh.getElementFaceNodes(self.elementType, 3)
+        faceTags, _ = gmsh.model.mesh.getFaces(3, faceNodes)
+        
+        for i in range(len(faceTags)):
+            if faceTags[i] not in self.faces2Elements:
+                self.faces2Elements[faceTags[i]] = [self.elementTags[i // 4]]
+            else:
+                self.faces2Elements[faceTags[i]].append(self.elementTags[i // 4])
+
+    def _build_elements2Elements(self):
+        for element in self.elementTags:
+            self.elements2Elements[element] = set()
+        
+        if self.dimension == 3:
+            for face, elements in self.faces2Elements.items():
+                if len(elements) == 2:
+                    self.elements2Elements[elements[0]].add(elements[1])
+                    self.elements2Elements[elements[1]].add(elements[0])
+        else:
+            for edge, elements in self.edges2Elements.items():
+                if len(elements) == 2:
+                    self.elements2Elements[elements[0]].add(elements[1])
+                    self.elements2Elements[elements[1]].add(elements[0])
+    
+    def _compute_jacobians(self):
+        localCoord = [1/3, 1/3] if gmsh.model.getDimension() == 2 else [0.25, 0.25, 0.25]
+        jacobians, determinants, _ = gmsh.model.mesh.getJacobians(self.elementType, localCoord)
+    
+        if len(determinants) == 0:
+            print("Warning: No Jacobians computed. Check if the mesh has valid elements.")
+    
+        for i, element in enumerate(self.elementTags):
+            if i < len(determinants):  # Ensure we don't access out of bounds
+                self.jacobians[element] = jacobians[i*9:(i+1)*9] if gmsh.model.getDimension() == 3 else jacobians[i*4:(i+1)*4]
+                self.determinants[element] = determinants[i]
+
+    def print_info(self):
+        print(f"Mesh contains {self.num_elements} elements ({'triangles' if self.dimension == 2 else 'tetrahedrons'})")
+        print(f"Number of vertices: {len(self.vertices)}")
+        print("Elements adjacency list:")
+        for element, neighbors in self.elements2Elements.items():
+            print(f"  Element {element} -> {neighbors}")
+        print("Jacobian matrices:")
+        for element, jacobian in self.jacobians.items():
+            print(f"  Element {element} -> {jacobian}")
+        print("Determinants:")
+        for element, determinant in self.determinants.items():
+            print(f"  Element {element} -> {determinant}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        mesh_file = sys.argv[1]
+    else:
+        gmsh.initialize()
+        gmsh.model.add("simple")
+        
+        if len(sys.argv) > 2 and sys.argv[2] == "2D":
+            gmsh.model.occ.addRectangle(0, 0, 0, 1, 1)
+            dim = 2
+        else:
+            gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+            dim = 3
+        
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(dim)
+        gmsh.write("default.msh")
+        mesh_file = "default.msh"
+        gmsh.finalize()
+    
+    mesh = Mesh(mesh_file)
+    breakpoint()
+
+#+END_SRC
+
+* Plotting in Matplotlib
+Now that we have our ~Mesh~ class, lets test it out. In the ~Mesh~ class we made a bunch of connectivity matrices. Lets visualize some of these to get a feel for some of the information we will need in our discontinuous Galerkin algorithm.
+
+... rest coming soon
+
+* References
+#+print_bibliography:

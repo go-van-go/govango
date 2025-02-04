@@ -6,6 +6,7 @@
 #+BEGIN_EXPORT html
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">DG from scratch - The Finite Element</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh.html">DG from scratch - Gmsh</a></li>
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-mapping-reference-to-physical.html">DG from scratch - Mapping from Reference Space to Physical Space</a></li>
 </ul>
 #+END_EXPORT
