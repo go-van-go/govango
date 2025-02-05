@@ -194,11 +194,14 @@ Entity (2, 6) of type Discrete surface
  - Mesh has 81 nodes and 192 elements
 #+END_SRC
 
-- We can even get the Jacobian of an element using ~gmsh.model.mesh.getJacobians()~
-- We can get all the nodes (vertices) that lie on a boundary using ~gmsh.model.mesh.getElementEdgeNodes~
-- ~gmsh.model.mesh.getElementFaceNodes~ gets the nodes on the faces of entities.
+Luckily Gmsh allows to get a lot more information from the mesh. Fro example:
 
-Since ~gmsh.model.mesh.getEdges(edgenodes)~ and ~gmsh.model.mesh.getFaces()~ return in the same order as the elements, we can make a matrix that tells us the connections between edges and elements, and faces and elements.
+- We can get all the nodes (vertices) that lie on a boundary using ~gmsh.model.mesh.getElementEdgeNodes()~
+- We can get the nodes on the faces of entities using ~gmsh.model.mesh.getElementFaceNodes()~
+- We can get the Jacobian of an element using ~gmsh.model.mesh.getJacobians()~
+- We can get the surface normal of every face
+
+Since ~gmsh.model.mesh.getEdges()~ and ~gmsh.model.mesh.getFaces()~ return in the same order as the elements, we can do things like make a dictionary that tells us the connections between edges and elements, and faces and elements.
 
 Using all this information, lets create a file called ~mesh.py~ and in that file well create the following python class called ~Mesh~.
 

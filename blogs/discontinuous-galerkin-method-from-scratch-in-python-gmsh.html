@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-04 Tue 16:20 -->
+<!-- 2025-02-04 Tue 19:34 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - Gmsh</title>
@@ -150,7 +150,7 @@ Running this python file with <code>python 3d-torus.py</code> will produce our 3
 <div id="outline-container-org15cd7b6" class="outline-2">
 <h2 id="org15cd7b6">Writing a Mesh class in python</h2>
 <div class="outline-text-2" id="text-org15cd7b6">
-<div class="emphasis" id="orgde5d587">
+<div class="emphasis" id="orgfe97fd1">
 <p>
 Our goal is to create a python class called <code>Mesh</code> that can easily provide the following information:<br>
 </p>
@@ -171,7 +171,7 @@ Our goal is to create a python class called <code>Mesh</code> that can easily pr
 We can visualize the mesh using the built in GUI for Gmsh. However, were going to need to get a bunch of the information from Gmsh into numpy, so lets figure out how to do that.<br>
 </p>
 
-<div class="extra" id="org8ac8be2">
+<div class="extra" id="org60133d7">
 <p>
 Naming conventions for meshes can vary from person to person. In this cite we'll stick to the following.<br>
 </p>
@@ -231,7 +231,7 @@ This is a list of all the entities in the model as <code>(dimension,tag)</code> 
 So <code>(0,1)</code> means there is a point (zero dimensional object) with a tag of 1.<br>
 </p>
 
-<div class="emphasis" id="orgc801683">
+<div class="emphasis" id="org815ccb8">
 <p>
 <i>What is a tag in Gmsh?</i><br>
 </p>
@@ -302,14 +302,19 @@ Info    : Done reading <span style="color: #A3BE8C;">'2d-ellipse.msh'</span>
 </pre>
 </div>
 
+<p>
+Luckily Gmsh allows to get a lot more information from the mesh. Fro example:<br>
+</p>
+
 <ul class="org-ul">
-<li>We can even get the Jacobian of an element using <code>gmsh.model.mesh.getJacobians()</code><br></li>
-<li>We can get all the nodes (vertices) that lie on a boundary using <code>gmsh.model.mesh.getElementEdgeNodes</code><br></li>
-<li><code>gmsh.model.mesh.getElementFaceNodes</code> gets the nodes on the faces of entities.<br></li>
+<li>We can get all the nodes (vertices) that lie on a boundary using <code>gmsh.model.mesh.getElementEdgeNodes()</code><br></li>
+<li>We can get the nodes on the faces of entities using <code>gmsh.model.mesh.getElementFaceNodes()</code><br></li>
+<li>We can get the Jacobian of an element using <code>gmsh.model.mesh.getJacobians()</code><br></li>
+<li>We can get the surface normal of every face<br></li>
 </ul>
 
 <p>
-Since <code>gmsh.model.mesh.getEdges(edgenodes)</code> and <code>gmsh.model.mesh.getFaces()</code> return in the same order as the elements, we can make a matrix that tells us the connections between edges and elements, and faces and elements.<br>
+Since <code>gmsh.model.mesh.getEdges()</code> and <code>gmsh.model.mesh.getFaces()</code> return in the same order as the elements, we can do things like make a dictionary that tells us the connections between edges and elements, and faces and elements.<br>
 </p>
 
 <p>
