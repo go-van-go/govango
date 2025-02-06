@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-06 Thu 13:17 -->
+<!-- 2025-02-06 Thu 15:52 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - Gmsh to Numpy</title>
@@ -62,7 +62,7 @@ My goal is to create a python class that lets me take any 3D tetrahedral <code>.
 Gmsh is an <b>open source</b> 3D finite element mesh generator ran by Christophe Geuzaine out of the <i>Université de Liège</i> in Belgium [<a href="#citeproc_bib_item_1">1</a>]. It does a lot of great stuff, but what I'm mainly interested in is its ability to generate a <b>3D unstructured tetrahedral mesh</b> out of common 3D files (like <code>.stl</code> files for example). This will allow me to take MRI data of the human brain and use to produce a 3D volumetric mesh to use in a DG simulation.<br>
 </p>
 
-<div class="extra" id="orgc17eb26">
+<div class="extra" id="org1539eb2">
 <p>
 <i>How do you turn MRI data into a .msh file?</i><br>
 </p>
@@ -85,7 +85,7 @@ For now I'm just going to focus on a 3D tetrahedral mesh.<br>
 Our goal is to create a python class called <code>Mesh</code> that can convert the data in a <code>.msh</code> file from Gmsh into numpy arrays that we can use in a DG wave simulation.<br>
 </p>
 
-<div class="extra" id="org9d7e095">
+<div class="extra" id="org1bba0f2">
 <p>
 Naming conventions for meshes can vary from person to person. In this cite we'll stick to the following.<br>
 </p>
@@ -126,7 +126,7 @@ We can solve the first problem using using Gmsh's python API that can return a b
 The second problem is specific to the discontinuous Galerkin method. We'll need to be able to find each cells neighbors, and which faces are adjacent.<br>
 </p>
 
-<div class="emphasis" id="org7fb9022">
+<div class="emphasis" id="org9cd7759">
 <p>
 <i>What information do we want to extract?</i><br>
 </p>
@@ -182,7 +182,7 @@ Gmsh is a very complex tool, and we are only going to use a small subset of it. 
 We only care about a few functions from the python API.<br>
 </p>
 
-<div class="emphasis" id="org155eeef">
+<div class="emphasis" id="org0712650">
 <p>
 <i>What is a tag in Gmsh?</i><br>
 </p>
@@ -402,6 +402,14 @@ This produces the following.<br>
 </p>
 
 <script type="module" src="/assets/js/adjacent-cells.js"></script>
+</div>
+</div>
+<div id="outline-container-orgadf8a1f" class="outline-2">
+<h2 id="orgadf8a1f">Conclusion</h2>
+<div class="outline-text-2" id="text-orgadf8a1f">
+<p>
+In this article we've created a python class, <code>Mesh3d</code> that allows us to take any Gmsh <code>.msh</code> file that contains unstructured tetrahedral mesh data and extract the information we need for a discontinuous Galerkin finite element problem. We've stored this data in numpy arrays that we call <i>connectivity matrices</i>. We've also created a 3D plotting function using pyvista that takes in an element and outputs a interactive 3D viewer that plots the cell and its immediate neighbors.<br>
+</p>
 </div>
 </div>
 <div id="outline-container-orgedac1cd" class="outline-2">

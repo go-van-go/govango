@@ -282,6 +282,8 @@ This produces the following.
 <script type="module" src="/assets/js/adjacent-cells.js"></script>
 #+END_EXPORT
 
+* Conclusion
+In this article we've created a python class, ~Mesh3d~ that allows us to take any Gmsh ~.msh~ file that contains unstructured tetrahedral mesh data and extract the information we need for a discontinuous Galerkin finite element problem. We've stored this data in numpy arrays that we call /connectivity matrices/. We've also created a 3D plotting function using pyvista that takes in an element and outputs a interactive 3D viewer that plots the cell and its immediate neighbors.
 
 * References
 #+print_bibliography:

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-06 Thu 13:17 -->
+<!-- 2025-02-06 Thu 15:52 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DG Method From Scratch (in Python) - The Element</title>
+<title>DG Method From Scratch (in Python) - The Finite Element</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
@@ -66,7 +66,7 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">DG Method From Scratch (in Python) - The Element
+<h1 class="title">DG Method From Scratch (in Python) - The Finite Element
 <br>
 <span class="subtitle">and how to pick the right one for your simulation</span>
 </h1>
@@ -106,7 +106,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="orgcd41c77">
+<div class="emphasis" id="orga7a99a2">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -122,7 +122,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org83a45d8">
+<div class="extra" id="orgfff90a1">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -197,7 +197,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="org65349df">
+<div class="emphasis" id="org4c2e8db">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -242,6 +242,65 @@ For three dimensions the best quadrature points I have seen were created by Tobi
 </p>
 </div>
 </div>
+<div id="outline-container-org2f024b8" class="outline-2">
+<h2 id="org2f024b8">Tabulating the nodal positions</h2>
+<div class="outline-text-2" id="text-org2f024b8">
+<p>
+Isaac's <code>recursive_nodes</code> package helps us get the current state of the art coordinates for the quadrature points. It works as follows.<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">d = 3  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">three dimensions (tetrahedra)</span>
+n = 3  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">3rd order basis functions</span>
+<span style="color: #88C0D0;">recursive_nodes</span>(d,n, <span style="color: #D8DEE9;">domain</span>=<span style="color: #A3BE8C;">'unit'</span>)
+&gt;&gt; [[0.         0.         0.        ]
+    [0.         0.         0.2763932 ]
+    [0.         0.         0.7236068 ]
+    [0.         0.         1.        ]
+    [0.         0.2763932  0.        ]
+    [0.         0.33333333 0.33333333]
+    [0.         0.2763932  0.7236068 ]
+    [0.         0.7236068  0.        ]
+    [0.         0.7236068  0.2763932 ]
+    [0.         1.         0.        ]
+    [0.2763932  0.         0.        ]
+    [0.33333333 0.         0.33333333]
+    [0.2763932  0.         0.7236068 ]
+    [0.33333333 0.33333333 0.        ]
+    [0.33333333 0.33333333 0.33333333]
+    [0.2763932  0.7236068  0.        ]
+    [0.7236068  0.         0.        ]
+    [0.7236068  0.         0.2763932 ]
+    [0.7236068  0.2763932  0.        ]
+    [1.         0.         0.        ]]
+</pre>
+</div>
+
+<p>
+Here we get the coordinates of all 20 points on a 3rd order Lagrange element on a tetrahedra.<br>
+</p>
+
+<p>
+This is wonderful, but I really only need to tabulate these points for different degrees. I don't need the whole python package.  The following code can tabulate the points for up to 30th order Lagrange polynomials on a tetrahedra<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+<span style="color: #81A1C1;">from</span> recursivenodes <span style="color: #81A1C1;">import</span> recursive_nodes
+
+<span style="color: #D8DEE9;">nodes_dict</span> = {}
+<span style="color: #81A1C1;">for</span> n <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1, 31):
+    <span style="color: #D8DEE9;">nodes_dict</span>[<span style="color: #81A1C1;">str</span>(n)] = recursive_nodes(3, n, domain=<span style="color: #A3BE8C;">'unit'</span>)  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Convert n to str for npz keys</span>
+    
+np.savez_compressed(<span style="color: #A3BE8C;">"tetrahedra_nodes.npz"</span>, **nodes_dict)
+</pre>
+</div>
+
+<p>
+This creates the <code>tetrahedra_nodes.npz</code> file that I can quickly load when defining my finite element. I can do a similar thing for the triangle nodes.<br>
+</p>
+</div>
+</div>
 <div id="outline-container-org62f7412" class="outline-2">
 <h2 id="org62f7412">Python Code</h2>
 <div class="outline-text-2" id="text-org62f7412">
@@ -253,7 +312,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orgf6f2f11">
+<div class="emphasis" id="orgf2d10e5">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -269,7 +328,7 @@ No. Typically all the calculations are done on a <b>reference element</b>, and t
 </p>
 
 <p>
-<b>Nodal basis</b>: We're using the optimized points from the <code>recursivenodes</code> code.<br>
+<b>Nodal basis</b>: We're using the optimized points from the <code>recursivenodes</code> code that we tabulated.<br>
 </p>
 
 <p>
@@ -301,25 +360,37 @@ Lets start by creating a reference volume as a python class. We can then import 
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #81A1C1;">from</span> reference_domains <span style="color: #81A1C1;">import</span> Tetrahedron
-<span style="color: #81A1C1;">from</span> recursivenodes <span style="color: #81A1C1;">import</span> recursivenodes
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+<span style="color: #81A1C1;">from</span> reference_domains <span style="color: #81A1C1;">import</span> Tetrahedron, Triangle
+
 
 <span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">LagrangeElement</span>:
+    <span style="color: #78808f;">"""Lagrange finite element defined on a triangle and</span>
+<span style="color: #78808f;">      tetrahedron"""</span>
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">load the nodes once as a class attribute</span>
+    <span style="color: #D8DEE9;">_triangle_nodes</span> = np.load(<span style="color: #A3BE8C;">"triangle_nodes.npz"</span>)
+    <span style="color: #D8DEE9;">_tetrahedron_nodes</span> = np.load(<span style="color: #A3BE8C;">"tetrahedron_nodes.npz"</span>)
+
     <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>, d, n):
-        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">d is the dimension, n is the order of the polynomial basis functions</span>
-        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">d</span> = d
-        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">n</span> = n
-        
-        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the domain as an instance of Tetrahedron</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">d</span> = d  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">dimension</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">n</span> = n  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">polynomial order</span>
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the domain</span>
         <span style="color: #81A1C1;">if</span> d == 2:
             <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Triangle()
         <span style="color: #81A1C1;">elif</span> d == 3:
             <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Tetrahedron()
         <span style="color: #81A1C1;">else</span>:
-            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(<span style="color: #A3BE8C;">"Incorrect element dimention (d). Should be 2 or 3"</span>) 
-        
-        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Generate nodes using recursivenodes</span>
-        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = recursivenodes(d, n, domain=<span style="color: #A3BE8C;">'unit'</span>)
+            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(<span style="color: #A3BE8C;">"Incorrect element dimension (d). Should be 2 or 3"</span>) 
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Load precomputed nodes</span>
+        <span style="color: #81A1C1;">if</span> d == 2 <span style="color: #81A1C1;">and</span> n &lt; 31:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = <span style="color: #81A1C1;">self</span>._triangle_nodes[<span style="color: #81A1C1;">str</span>(n)]
+        <span style="color: #81A1C1;">if</span> d == 3 <span style="color: #81A1C1;">and</span> n &lt; 31:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = <span style="color: #81A1C1;">self</span>._tetrahedron_nodes[<span style="color: #81A1C1;">str</span>(n)]
+        <span style="color: #81A1C1;">else</span>:
+            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(f<span style="color: #A3BE8C;">"No precomputed nodes found n=</span>{n}<span style="color: #A3BE8C;"> is not between 1 and 30"</span>)
 </pre>
 </div>
 
@@ -337,6 +408,14 @@ Great, now we've got a very simple finite element. Lets plot it to see what it l
 </p>
 <p><span class="figure-number">Figure 2: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
 </div>
+</div>
+</div>
+<div id="outline-container-orgc621f56" class="outline-2">
+<h2 id="orgc621f56">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc621f56">
+<p>
+We've create a python class for a Lagrange element that uses the optimal known nodal points.<br>
+</p>
 </div>
 </div>
 <div id="outline-container-org2a664a8" class="outline-2">
