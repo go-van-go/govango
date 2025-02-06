@@ -3,12 +3,12 @@
 #+SUBTITLE:  From reference space to physical space
 #+HTML: <p class="date"><i>last update: Feb 3, 2025</i></p>
 
-ARTICLE COMING SOON
-
 * Article Motivation 
 #+BEGIN_QUOTE
 
 #+END_QUOTE
+
+* Introduction
 
 * References
 #+print_bibliography:

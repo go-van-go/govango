@@ -1,104 +1,30 @@
 #+SETUPFILE: ./blog-styles.org
-#+TITLE: DG Method From Scratch (in Python) - Gmsh 
-#+SUBTITLE: Making a mesh and extracting information
-#+HTML: <p class="date"><i>last update: Feb 4, 2025</i></p>
+#+TITLE: DG Method From Scratch (in Python) - Gmsh to Numpy
+#+SUBTITLE: Extracting information from a Gmsh mesh 
+#+HTML: <p class="date"><i>last update: Feb 6, 2025</i></p>
 
 * Article Motivation 
 #+BEGIN_QUOTE
-- How do you make a mesh on Gmsh?
-- How do I loop over elements or faces?
-- How do I get the normal to each face?
-- How do I find the boundary nodes and faces?
-- Create a python class called ~Mesh~ with functions that return important information about the Gmsh mesh.
+- Create a python class called ~Mesh3d~ that extracts important information about a Gmsh mesh.
+- Store mesh connectivity information about cells (tetrahedra) and faces in numpy arrays.
+- Visualize the ~Mesh3d~ object.
 #+END_QUOTE
 
 * Introduction
-Gmsh is an *open source* 3D finite element mesh generator [cite:@geuzaine2009gmsh]. Let's use it to produce triangle and tetrahedral meshes. Then, we'll extract all the information we need to do a finite element simulation (like vertices for each cell, normal to each face, boundary faces, which elements are touching and on which face).
+My goal is to create a python class that lets me take any 3D tetrahedral ~.msh~ file from Gmsh, and extract all the relevant information for a discontinuous Galerkin (DG) finite element problem.
 
-* Creating a 2D and 3D mesh in Gmsh
-Let's create some meshes that we can use as examples.
+Gmsh is an *open source* 3D finite element mesh generator ran by Christophe Geuzaine out of the /Université de Liège/ in Belgium [cite:@geuzaine2009gmsh]. It does a lot of great stuff, but what I'm mainly interested in is its ability to generate a *3D unstructured tetrahedral mesh* out of common 3D files (like ~.stl~ files for example). This will allow me to take MRI data of the human brain and use to produce a 3D volumetric mesh to use in a DG simulation. 
 
-We'll start with a 2D mesh. We'll make a simple ellipse and we'll do it using Gmsh's built in geometry kernel. We'll save the following as ~2d-ellipse.geo~
+#+BEGIN_extra
+/How do you turn MRI data into a .msh file?/
 
-#+BEGIN_SRC gmsh
-cm = 1e-02; // centimeters
-a = 6 * cm; // Semi-major axis
-b = 4 * cm; // Semi-minor axis
-Lc = 0.01;  // characteristic cell length 
+Typically MRI data comes in the from of a [[https://govango.org/blogs/what-type-of-medical-imaging-data-exists][DICOM]] (~.dcm~) file. There are a number of ways to turn this into a ~.stl~ file (often used in CAD and 3D printing). Gmsh can turn the ~.stl~ file into a ~.msh~ file.
+#+END_extra
 
-// Define center and ellipse points
-Point(1) = {0, 0, 0, Lc};
-Point(2) = {a, 0, 0, Lc};
-Point(3) = {0, b, 0, Lc};
-Point(4) = {-a, 0, 0, Lc};
-Point(5) = {0, -b, 0, Lc};
+For now I'm just going to focus on a 3D tetrahedral mesh.
 
-// Define ellipse using center and points
-Ellipse(1) = {2, 1, 3};
-Ellipse(2) = {3, 1, 4};
-Ellipse(3) = {4, 1, 5};
-Ellipse(4) = {5, 1, 2};
-
-// Define surface
-Curve Loop(5) = {1, 2, 3, 4};
-Plane Surface(6) = {5};
-#+END_SRC
-
-We can then run the following code to produce a ~.msh~ file, Gmsh's own file type for storing mesh data.
-
-#+BEGIN_SRC bash
-gmsh -2 2d-ellipse.geo -o 2d-ellipse.msh
-#+END_SRC
-
-Now let's use the /OpenCASCADE/ geometry Kernel that is available using Gmsh's python API. We'll create the following file called ~3d-torus.py~
-
-#+BEGIN_SRC python
-import gmsh
-import sys
-
-# initialize gmsh
-gmsh.initialize(sys.argv)
-
-# Same parameters as 2D problem
-cm = 1e-02;
-a = 6 * cm;
-b = 4 * cm;
-Lc = 0.01;
-
-# Create an ellipse using OpenCASCADE
-ellipse = gmsh.model.occ.addTorus(0, 0, 0, a, b)
-
-# Synchronize the model
-gmsh.model.occ.synchronize();
-
-# Generate a 2D mesh
-gmsh.model.mesh.generate(2)
-
-# Save the mesh as a .msh file
-gmsh.write("3d-torus.msh")
-
-# Run the GUI
-gmsh.fltk.run()
-
-gmsh.finalize()
-#+END_SRC
-
-Running this python file with ~python 3d-torus.py~ will produce our 3D ~.msh~ file.
-
-* Writing a Mesh class in python
-#+BEGIN_emphasis
-Our goal is to create a python class called ~Mesh~ that can easily provide the following information:
-- ~dimension~ - dimension of mesh
-- ~num_elements~ - number of elements in the mesh
-- ~verticies[i]~ - coordinates for vertex ~i~ 
-- ~edges2Elements[i]~ - the elements that include edge ~i~
-- ~faces2Elements[i]~ - the elements that include face ~i~
-- ~elements2Elements[i]~ - the elements adjacent to element ~i~
-- ~normal[i]~ - the normal vector to face ~i~
-- ~jacobians[i]~ - the jacobian matrix of element ~i~ (used for mapping from reference element)
-- ~determinants[i]~ - the determinant of element ~i~'s Jacobian matrix (used for mapping from reference element)
-#+END_emphasis
-We can visualize the mesh using the built in GUI for Gmsh. However, were going to need to get a bunch of the information from Gmsh into numpy, so lets figure out how to do that.
+* Extracting information from the mesh 
+Our goal is to create a python class called ~Mesh~ that can convert the data in a ~.msh~ file from Gmsh into numpy arrays that we can use in a DG wave simulation.
 
 #+BEGIN_extra
 Naming conventions for meshes can vary from person to person. In this cite we'll stick to the following.
@@ -112,30 +38,49 @@ See the posts about [[https://govango.org/blogs/what-is-a-computational-mesh][me
 Unfortunately Gmsh uses element and node terminology for meshes, so you might see them interchanged at times.
 #+END_extra
 
-The first thing we'll want to do is extract all the vertices and plot them using matplotlib. Lets create a python file called ~mesh-with-matplotlib.py~
+Really we have *three problems to solve*. The first is to figure out *how to extract information from a ~.msh~ file*, the second is to decide *what information to extract*, and the third is to come up with a way to *structure the data in numpy arrays* so the finite element calculations will be easy to do.
 
-Lets get familiar with some of the Gmsh functionality with the following simple code.
+We can solve the first problem using using Gmsh's python API that can return a bunch of useful information. For example:
 
-#+BEGIN_SRC python
-import gmsh
-import pdb
+- ~gmsh.model.mesh.getElementProperties()~ - tells us the general properties of our mesh
+- ~gmsh.model.mesh.getNodesByElementType()~ - gets the coordinates of all the vertices
+- ~gmsh.model.mesh.getElementEdgeNodes()~ - get the two vertex indices for each edge
 
-gmsh.initialize()
-gmsh.open(file_path)
+The second problem is specific to the discontinuous Galerkin method. We'll need to be able to find each cells neighbors, and which faces are adjacent.
+  
+#+BEGIN_emphasis
+/What information do we want to extract?/
 
-entities = gmsh.model.getEntities() 
-breakpoint()
-#+END_SRC
+- ~dimension~ - dimension of the mesh
+- ~num_vertices~ = number of vertices in the mesh
+- ~num_cells~ = number of tetrahedral cells in the mesh
+- ~vertexCoordinates~ = x, y, and z coordinates of all vertices
+- ~edgeVertices~ = numpy array of vertex indices for edges
+- ~cell2vertices~ = numpy array of vertex indices for cells
+- ~cell2cells~ = numpy array of adjacent cell indices for cells
+- ~cell2faces~ = numpy array of which faces each cell touches
+- ~jacobians~ = Jacobian matrices from the mappings from reference cell 
+- ~determinants~ = determinant of the Jacobian matrices 
+#+END_emphasis
 
-This puts us into the python debugger where we can start to poke around. Typing ~(PDB) entities~ returns the following:
-#+BEGIN_SRC bash
-[(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 1), (1, 2), (1, 3), (1, 4), (2, 6)] # for 2d-ellipse.msh
-[(0, 1), (1, 1), (1, 2), (2, 1), (3, 1)]  # for 3d-torus.msh 
-#+END_SRC
+The third problem can be solved by a clever scheme used in Hesthaven and Warburton's book, /Nodal Discontinuous Galerkin Methods/ [cite:@hesthaven2008nodal].
 
-This is a list of all the entities in the model as ~(dimension,tag)~ pairs.
+- ~cell2vertices~ will have a size of ~(number of cells, 4)~ since each tetrahedron has 4 vertices.
+- ~cell2cells~ will have a size of ~(number of cells, 4)~ since each cell touches four other cells. This matrix is initiated such that the values in each row are the index of that row. That means is a connection is not found, ~cells2cells~ will report that the cell is connected to itself.
+- ~cell2faces~ will have a size of ~(number of cells, 4)~ since each cell touches four faces. This matrix is initialized with every row as ~[0,1,2,3]~.
 
-So ~(0,1)~ means there is a point (zero dimensional object) with a tag of 1.
+For example, if ~cell2cells[5]~ is ~[29, 12, 5, 40]~ and ~cell2faces[5]~ is ~[2, 0, 2, 1]~ that means the following:
+- face 0 of cell 5 is connected to face 2 of cell 29
+- face 1 of cell 5 is connected to face 0 of cell 12
+- face 2 of cell 5 is connected to itself (boundary cell)
+- face 3 of cell 5 is connected to face 1 of cell 40
+
+This implies there is a standardized way to keep track of the *local face number* for each cell. This turns out to be inherent in the way the code is written.
+
+* Using Gmsh
+Gmsh is a very complex tool, and we are only going to use a small subset of it. Gmsh has a full CAD GUI and can even be used as a post-processor like Paraview.
+
+We only care about a few functions from the python API.  
 
 #+BEGIN_emphasis
 /What is a tag in Gmsh?/
@@ -148,62 +93,7 @@ A tag is just a global identification model for the entity. It is strictly posit
 - each volume must possess a unique tag. 
 #+END_emphasis
 
-Our ~2d-ellipse.msh~ has 5 points, 4 curves, and 1 surface.
-
-Our ~3d-torus.msh~ file has 1 point, 2 curves, 1 surface, and 1 volume.
-
-Using example 2.22 from [[https://gmsh.info/doc/texinfo/gmsh.html#x1][the official gmsh tutorial]], we can print the following information about our ~2d-ellipse.msh~ file.
-
-#+BEGIN_SRC bash
-Info    : Reading '2d-ellipse.msh'...
-Info    : 10 entities
-Info    : 114 nodes
-Info    : 229 elements
-Info    : Done reading '2d-ellipse.msh'
-Entity (0, 1) of type Point
- - Mesh has 1 nodes and 1 elements
-Entity (0, 2) of type Point
- - Mesh has 1 nodes and 1 elements
- - Upward adjacencies: [1 4]
-Entity (0, 3) of type Point
- - Mesh has 1 nodes and 1 elements
- - Upward adjacencies: [1 2]
-Entity (0, 4) of type Point
- - Mesh has 1 nodes and 1 elements
- - Upward adjacencies: [2 3]
-Entity (0, 5) of type Point
- - Mesh has 1 nodes and 1 elements
- - Upward adjacencies: [3 4]
-Entity (1, 1) of type Discrete curve
- - Mesh has 7 nodes and 8 elements
- - Upward adjacencies: [6]
- - Downward adjacencies: [2 3]
-Entity (1, 2) of type Discrete curve
- - Mesh has 7 nodes and 8 elements
- - Upward adjacencies: [6]
- - Downward adjacencies: [3 4]
-Entity (1, 3) of type Discrete curve
- - Mesh has 7 nodes and 8 elements
- - Upward adjacencies: [6]
- - Downward adjacencies: [4 5]
-Entity (1, 4) of type Discrete curve
- - Mesh has 7 nodes and 8 elements
- - Upward adjacencies: [6]
- - Downward adjacencies: [5 2]
-Entity (2, 6) of type Discrete surface
- - Mesh has 81 nodes and 192 elements
-#+END_SRC
-
-Luckily Gmsh allows to get a lot more information from the mesh. Fro example:
-
-- We can get all the nodes (vertices) that lie on a boundary using ~gmsh.model.mesh.getElementEdgeNodes()~
-- We can get the nodes on the faces of entities using ~gmsh.model.mesh.getElementFaceNodes()~
-- We can get the Jacobian of an element using ~gmsh.model.mesh.getJacobians()~
-- We can get the surface normal of every face
-
-Since ~gmsh.model.mesh.getEdges()~ and ~gmsh.model.mesh.getFaces()~ return in the same order as the elements, we can do things like make a dictionary that tells us the connections between edges and elements, and faces and elements.
-
-Using all this information, lets create a file called ~mesh.py~ and in that file well create the following python class called ~Mesh~.
+* The Mesh3d python class
 
 #+BEGIN_SRC python
 class Mesh3d:
@@ -307,9 +197,91 @@ class Mesh3d:
 #+END_SRC
 
 * Plotting in Matplotlib
-Now that we have our ~Mesh~ class, lets test it out. In the ~Mesh~ class we made a bunch of connectivity matrices. Lets visualize some of these to get a feel for some of the information we will need in our discontinuous Galerkin algorithm.
+Now that we have our ~Mesh3d~ class, lets test it out. In the ~Mesh3d~ class we made a bunch of connectivity matrices. Lets visualize some of these to get a feel for the information we need in a discontinuous Galerkin algorithm.
 
-... rest coming soon
+Lets start by building a function that can take in any cell's index and output a 3D visualization of that cell and its neighbors.
+
+We'll put this function in a file called ~plot-adjacent-cells.py~ that contains the following:
+#+BEGIN_SRC python
+import pyvista as pv
+import numpy as np
+
+def plot_mesh(mesh, highlight_cells=None):
+    # Create PyVista UnstructuredGrid
+    cells = np.hstack([np.full((mesh.num_cells, 1), 4), mesh.cell2vertices]).flatten()
+    cell_types = np.full(mesh.num_cells, pv.CellType.TETRA)  # Tetrahedral elements
+    
+    grid = pv.UnstructuredGrid(cells, cell_types, mesh.vertexCoordinates)
+    plotter = pv.Plotter()
+    
+    # Plot mesh as wireframe
+    plotter.add_mesh(grid, style='wireframe', color='black')
+    
+    # Highlight specific cells if provided
+    if highlight_cells is not None:
+        # First cell in yellow
+        first_cell = highlight_cells[0]
+        highlight_grid = pv.UnstructuredGrid(
+            np.hstack([[4], mesh.cell2vertices[first_cell]]).flatten(),
+            [pv.CellType.TETRA], mesh.vertexCoordinates
+        )
+        plotter.add_mesh(highlight_grid, color='#ebcb8b', opacity=1.0)
+        
+        # Remaining cells in blue 
+        for cell in highlight_cells[1:]:
+            highlight_grid = pv.UnstructuredGrid(
+                np.hstack([[4], mesh.cell2vertices[cell]]).flatten(),
+                [pv.CellType.TETRA], mesh.vertexCoordinates
+            )
+            plotter.add_mesh(highlight_grid, color='5e81ac', opacity=0.5)
+    
+    plotter.show()
+
+if __name__ == "__main__":
+    import gmsh
+    import sys
+    from mesh import Mesh3d 
+
+    if len(sys.argv) > 1:
+        mesh_file = sys.argv[1]
+    else:
+        gmsh.initialize()
+        gmsh.model.add("simple")
+        gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+        #gmsh.option.setNumber("Mesh.MeshSizeMin", 2.0)
+        gmsh.option.setNumber("Mesh.MeshSizeMax", 0.1)
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write("default.msh")
+        mesh_file = "default.msh"
+        gmsh.finalize()
+    
+    mesh = Mesh3d(mesh_file)
+    cell_number = 1604   # the cell to visualize
+    adjacent_cells = mesh.cell2cells[cell_number]
+    all_cells = np.insert(adjacent_cells, 0, cell_number)
+    all_cells, indices = np.unique(all_cells, return_index=True)
+    all_cells = all_cells[np.argsort(indices)]  # Restore original order
+
+    plot_mesh(mesh, all_cells)
+
+
+#+END_SRC
+You can change the ~cell_number~ variable at the bottom to visualize other cells.
+
+This produces the following.
+
+
+#+BEGIN_EXPORT html
+<div id="three-js-container"></div>
+#+END_EXPORT
+#+ATTR_HTML: :class three-js-caption
+*Interactive* 3D mesh Containing cell number 1604 and the immediate 4 neighbors. _*Click and drag*_ to move around the mesh. 
+
+#+BEGIN_EXPORT html
+<script type="module" src="/assets/js/adjacent-cells.js"></script>
+#+END_EXPORT
+
 
 * References
 #+print_bibliography:
