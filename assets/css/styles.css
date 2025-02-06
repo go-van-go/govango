@@ -394,16 +394,15 @@ ul {
 
 /* Link styling */
 .blog-links {
-  color: var(--nord-8);
+  color: var(--nord-6);
   text-decoration: none; /* Ensures links remain without underline */
   font-size: 1em;
   font-weight: 200;
 }
 
 .blog-links:hover {
-  color: var(--nord-4);
-  background-color: var(--nord-0);
-  box-shadow: 0 0 4px 2px var(--nord-10);
+  color: var(--nord-6);
+  font-weight: bold;
   border-radius: 3px;
 }
 
