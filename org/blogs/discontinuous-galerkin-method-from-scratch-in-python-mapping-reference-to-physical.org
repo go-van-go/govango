@@ -5,10 +5,16 @@
 
 * Article Motivation 
 #+BEGIN_QUOTE
-
+- How do I map my nodes from the reference element to the mesh?
+- How do I find the Jacobians and surface Jacobians for each cell and cell face in my mesh?
+- How do I find the normal vectors for each face in each cell?
+- Code it in python
 #+END_QUOTE
 
 * Introduction
+In the [[https://www.govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh][last post on extracting information from a Gmsh mesh]] we created numpy arrays that held the necessary connectivity data about our mesh, telling us things like which cells were adjacent and which faces were touching.
+
+Now we need to go one step further and map our nodal basis from the reference tetrahedron to each cell in our mesh. This means we need to create numpy arrays for the coordinates for each node in each cell in our mesh.
 
 * References
 #+print_bibliography:

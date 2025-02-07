@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-06 Thu 15:52 -->
+<!-- 2025-02-07 Fri 15:29 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - Mapping</title>
@@ -43,16 +43,27 @@
 <h2 id="org2872f15">Article Motivation</h2>
 <div class="outline-text-2" id="text-org2872f15">
 <blockquote>
-<p>
-<br>
-</p>
+<ul class="org-ul">
+<li>How do I map my nodes from the reference element to the mesh?<br></li>
+<li>How do I find the Jacobians and surface Jacobians for each cell and cell face in my mesh?<br></li>
+<li>How do I find the normal vectors for each face in each cell?<br></li>
+<li>Code it in python<br></li>
+</ul>
 </blockquote>
 </div>
 </div>
 <div id="outline-container-org7d6f968" class="outline-2">
 <h2 id="org7d6f968">Introduction</h2>
-</div>
+<div class="outline-text-2" id="text-org7d6f968">
+<p>
+In the <a href="https://www.govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh">last post on extracting information from a Gmsh mesh</a> we created numpy arrays that held the necessary connectivity data about our mesh, telling us things like which cells were adjacent and which faces were touching.<br>
+</p>
 
+<p>
+Now we need to go one step further and map our nodal basis from the reference tetrahedron to each cell in our mesh. This means we need to create numpy arrays for the coordinates for each node in each cell in our mesh.<br>
+</p>
+</div>
+</div>
 <div id="outline-container-org50b1e2b" class="outline-2">
 <h2 id="org50b1e2b">References</h2>
 <div class="outline-text-2" id="text-org50b1e2b">

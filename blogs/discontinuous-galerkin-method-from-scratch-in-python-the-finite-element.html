@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-06 Thu 15:52 -->
+<!-- 2025-02-07 Fri 15:29 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - The Finite Element</title>
@@ -106,7 +106,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="orga7a99a2">
+<div class="emphasis" id="org7b7f326">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -122,7 +122,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="orgfff90a1">
+<div class="extra" id="org5704e17">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -137,8 +137,14 @@ If \(V\) is a vector space over the real numbers \(\mathbb{R}\), then the <i>dua
 If you found the <b>set of degrees of freedom</b> in the definition of a finite element to be confusing, its because this definition is attempting to be as general as possible, and encompass all possible types of finite elements.<br>
 </p>
 
+<div id="org89a045a" class="figure">
+<p><img src="../../public/reference-tetrahedron.png" alt="Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron" class="blog-image"><br>
+</p>
+<p><span class="figure-number">Figure 2: </span>Geometry of a <b>reference tetrahedron</b> for a 3D Lagrange element defined on a tetrahedron.</p>
+</div>
+
 <p>
-Consider a very simple finite element, a <b>Lagrange</b> element on a tetrahedral mesh. The volume of the element is the reference tetrahedron. The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions <i>at specific points</i>. In this case we can think of the nodal variables as just a set of points on the tetrahedron.<br>
+Consider a very simple finite element, a <b>Lagrange</b> element on a tetrahedral mesh. The volume of the element is the reference tetrahedron (see fig. <a href="#org89a045a">2</a>). The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions <i>at specific points</i>. In this case we can think of the nodal variables as just a set of points on the tetrahedron.<br>
 </p>
 
 <p>
@@ -197,7 +203,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="org4c2e8db">
+<div class="emphasis" id="org9948e05">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -312,7 +318,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orgf2d10e5">
+<div class="emphasis" id="org77695d8">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -341,21 +347,25 @@ Lets start by creating a reference volume as a python class. We can then import 
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
 
+<span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Line</span>: 
+    <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the standard line segment</span>
+        <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vertices</span> = np.array([0,1])
+
 <span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Triangle</span>:
     <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
-        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the Tetrahedron</span>
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the triangle </span>
         <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vertices</span> = np.array([[0, 0],
-                                  [0, 1],
-                                  [1, 0]])
+                                  [1, 0],
+                                  [0, 1]])
 
 <span style="color: #81A1C1;">class</span> <span style="color: #8FBCBB;">Tetrahedron</span>:
     <span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">__init__</span>(<span style="color: #81A1C1;">self</span>):
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Define the vertices of the Tetrahedron</span>
         <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vertices</span> = np.array([[0, 0, 0],
+                                  [1, 0, 0],
                                   [0, 1, 0],
-                                  [0, 0, 1],
-                                  [1, 0, 0]])
-
+                                  [0, 0, 1]])
 </pre>
 </div>
 
@@ -369,6 +379,7 @@ Lets start by creating a reference volume as a python class. We can then import 
 <span style="color: #78808f;">      tetrahedron"""</span>
 
     <span style="color: #6f7787;"># </span><span style="color: #6f7787;">load the nodes once as a class attribute</span>
+    <span style="color: #D8DEE9;">_line_nodes</span> = np.load(<span style="color: #A3BE8C;">"line_nodes.npz"</span>)
     <span style="color: #D8DEE9;">_triangle_nodes</span> = np.load(<span style="color: #A3BE8C;">"triangle_nodes.npz"</span>)
     <span style="color: #D8DEE9;">_tetrahedron_nodes</span> = np.load(<span style="color: #A3BE8C;">"tetrahedron_nodes.npz"</span>)
 
@@ -377,14 +388,18 @@ Lets start by creating a reference volume as a python class. We can then import 
         <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">n</span> = n  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">polynomial order</span>
 
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the domain</span>
+        <span style="color: #81A1C1;">if</span> d == 1:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Line()
         <span style="color: #81A1C1;">if</span> d == 2:
             <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Triangle()
         <span style="color: #81A1C1;">elif</span> d == 3:
             <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">domain</span> = Tetrahedron()
         <span style="color: #81A1C1;">else</span>:
-            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(<span style="color: #A3BE8C;">"Incorrect element dimension (d). Should be 2 or 3"</span>) 
+            <span style="color: #81A1C1;">raise</span> <span style="color: #8FBCBB;">Exception</span>(<span style="color: #A3BE8C;">"Incorrect element dimension (d). Should be 1, 2, or 3"</span>) 
 
         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Load precomputed nodes</span>
+        <span style="color: #81A1C1;">if</span> d == 1 <span style="color: #81A1C1;">and</span> n &lt; 31:
+            <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = <span style="color: #81A1C1;">self</span>._line_nodes[<span style="color: #81A1C1;">str</span>(n)]
         <span style="color: #81A1C1;">if</span> d == 2 <span style="color: #81A1C1;">and</span> n &lt; 31:
             <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">nodes</span> = <span style="color: #81A1C1;">self</span>._triangle_nodes[<span style="color: #81A1C1;">str</span>(n)]
         <span style="color: #81A1C1;">if</span> d == 3 <span style="color: #81A1C1;">and</span> n &lt; 31:
@@ -406,7 +421,7 @@ Great, now we've got a very simple finite element. Lets plot it to see what it l
 <div id="org5b384cd" class="figure">
 <p><img src="../../public/lagrange-grid.png" alt="Grid of lagrange elements for various degrees of freedom and polynomial order" class="tall-image"><br>
 </p>
-<p><span class="figure-number">Figure 2: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
+<p><span class="figure-number">Figure 3: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
 </div>
 </div>
 </div>
