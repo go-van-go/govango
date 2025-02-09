@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-07 Fri 15:29 -->
+<!-- 2025-02-09 Sun 16:53 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - The Finite Element</title>
@@ -72,11 +72,10 @@
 </h1>
 <p class="date"><i>last update: Feb 3, 2025</i></p>
 
-
-<div id="org6814aae" class="figure">
-<p><img src="../../public/3x3lagrange-grid.png" alt="Visualzations of simple Lagrage elements with optimized quadrature points" class="hero-image"><br>
+<div id="org89a045a" class="figure">
+<p><img src="../../public/reference-tetrahedron.png" alt="Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron" class="blog-image"><br>
 </p>
-<p><span class="figure-number">Figure 1: </span>Examples of simple Lagrage elements with optimized quadrature points (shown in blue)</p>
+<p><span class="figure-number">Figure 1: </span>Geometry of a <b>reference tetrahedron</b> for a 3D Lagrange element.</p>
 </div>
 <div id="outline-container-org8d5de52" class="outline-2">
 <h2 id="org8d5de52">Article Motivation</h2>
@@ -106,7 +105,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org7b7f326">
+<div class="emphasis" id="org70a23a2">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -122,7 +121,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org5704e17">
+<div class="extra" id="orgb06af92">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -137,14 +136,8 @@ If \(V\) is a vector space over the real numbers \(\mathbb{R}\), then the <i>dua
 If you found the <b>set of degrees of freedom</b> in the definition of a finite element to be confusing, its because this definition is attempting to be as general as possible, and encompass all possible types of finite elements.<br>
 </p>
 
-<div id="org89a045a" class="figure">
-<p><img src="../../public/reference-tetrahedron.png" alt="Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron" class="blog-image"><br>
-</p>
-<p><span class="figure-number">Figure 2: </span>Geometry of a <b>reference tetrahedron</b> for a 3D Lagrange element defined on a tetrahedron.</p>
-</div>
-
 <p>
-Consider a very simple finite element, a <b>Lagrange</b> element on a tetrahedral mesh. The volume of the element is the reference tetrahedron (see fig. <a href="#org89a045a">2</a>). The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions <i>at specific points</i>. In this case we can think of the nodal variables as just a set of points on the tetrahedron.<br>
+Consider a very simple finite element, a <b>Lagrange</b> element on a tetrahedral mesh. The volume of the element is the reference tetrahedron (see fig. <a href="#org89a045a">1</a>). The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions <i>at specific points</i>. In this case we can think of the nodal variables as just a set of points on the tetrahedron.<br>
 </p>
 
 <p>
@@ -203,7 +196,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="org9948e05">
+<div class="emphasis" id="orgdba654b">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -318,7 +311,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="org77695d8">
+<div class="emphasis" id="orgcaf3b9c">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>
@@ -421,7 +414,7 @@ Great, now we've got a very simple finite element. Lets plot it to see what it l
 <div id="org5b384cd" class="figure">
 <p><img src="../../public/lagrange-grid.png" alt="Grid of lagrange elements for various degrees of freedom and polynomial order" class="tall-image"><br>
 </p>
-<p><span class="figure-number">Figure 3: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
+<p><span class="figure-number">Figure 2: </span>Grid of Lagrange Elements for various degrees of freedom (y-axis) and polynomial order (x-axis). Code is available in the <code>plotting</code> directory of the corresponding code <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">in the github repo</a></p>
 </div>
 </div>
 </div>

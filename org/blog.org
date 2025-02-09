@@ -5,9 +5,10 @@
 :END:
 #+BEGIN_EXPORT html
 <ul class="blog-list">
-<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">DG from scratch - The Finite Element</a></li>
-<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh.html">DG from scratch - Gmsh</a></li>
-<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-mapping-reference-to-physical.html">DG from scratch - Mapping from Reference Space to Physical Space</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">DG from scratch - The finite element</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh.html">DG from scratch - The Mesh (from Gmsh to Numpy)</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-reference-element-operators.html">DG from scratch - Reference element operators</a></li>
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-mapping-reference-to-physical.html">DG from scratch - Mapping from reference space to physical space</a></li>
 </ul>
 #+END_EXPORT
 
@@ -19,6 +20,15 @@
 <ul class="blog-list">
 <li><a class="blog-links" href="/blogs/what-is-a-computational-mesh.html">What is a computational mesh?</a></li>
 <li><a class="blog-links" href="/blogs/the-acoustic-wave-equations.html">The acoustic wave equation</a></li>
+</ul>
+#+END_EXPORT
+** Optimization 
+:PROPERTIES:
+:CUSTOM_ID:  blog-section
+:END:
+#+BEGIN_EXPORT html
+<ul class="blog-list">
+<li><a class="blog-links" href="/blogs/markov-chain-monte-carlo-explained-with-python.html">Markov chain Monte Carlo explained with python</a></li>
 </ul>
 #+END_EXPORT
 

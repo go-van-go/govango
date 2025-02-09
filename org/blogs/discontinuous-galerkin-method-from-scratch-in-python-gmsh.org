@@ -77,13 +77,6 @@ For example, if ~cell2cells[5]~ is ~[29, 12, 5, 40]~ and ~cell2faces[5]~ is ~[2,
 
 This implies there is a standardized way to keep track of the *local face number* for each cell. This turns out to be inherent in the way the code is written.
 
-* Computing information about the nodal set
-Once we've figured out all the information above about the mesh, we'll need compute some more information that comes from applying our finite element to our mesh.
-
-Specifically we'll compute the ~x~, ~y~, and ~z~ coordinates of all the nodal points of each cell on the mesh, and we'll need the outward normal vector to the surface at each of these points. We'll store the normal vectors in three separate numpy arrays called ~nx~, ~ny~, and ~nz~. The shape of each of these arrays will be ~(number of nodal points per face x 4, number of elements)~.
-
-Using these normal vectors we can find the surface jacobian of each face of each cell in our mesh. This will come in handy later with our DG calculations.
-
 * Using Gmsh
 Gmsh is a very complex tool, and we are only going to use a small subset of it. Gmsh has a full CAD GUI and can even be used as a post-processor like Paraview.
 

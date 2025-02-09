@@ -4,7 +4,7 @@
 <!-- 2025-02-09 Sun 16:53 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DG Method From Scratch (in Python) - Mapping</title>
+<title>Markov chain Monte Carlo explained with Python</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
@@ -34,39 +34,30 @@
   </nav>
 </div>
 <div id="content" class="content">
-<h1 class="title">DG Method From Scratch (in Python) - Mapping
+<h1 class="title">Markov chain Monte Carlo explained with Python
 <br>
-<span class="subtitle">From reference space to physical space</span>
+<span class="subtitle">What it is and how we can use it to minimize a function.</span>
 </h1>
-<p class="date"><i>last update: Feb 3, 2025</i></p>
-<div id="outline-container-org2872f15" class="outline-2">
-<h2 id="org2872f15">Article Motivation</h2>
-<div class="outline-text-2" id="text-org2872f15">
+<p class="date"><i>last update: Feb 9, 2025</i></p>
+<div id="outline-container-orgaa7edcf" class="outline-2">
+<h2 id="orgaa7edcf">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgaa7edcf">
 <blockquote>
 <ul class="org-ul">
-<li>How do I map my nodes from the reference element to the mesh?<br></li>
-<li>How do I find the Jacobians and surface Jacobians for each cell and cell face in my mesh?<br></li>
-<li>How do I find the normal vectors for each face in each cell?<br></li>
+<li>What is Markov chain Monte Carlo?<br></li>
+<li>How is it used in optimization problems?<br></li>
 <li>Code it in python<br></li>
 </ul>
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org7d6f968" class="outline-2">
-<h2 id="org7d6f968">Introduction</h2>
-<div class="outline-text-2" id="text-org7d6f968">
-<p>
-In the <a href="https://www.govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh">last post on extracting information from a Gmsh mesh</a> we created numpy arrays that held the necessary connectivity data about our mesh, telling us things like which cells were adjacent and which faces were touching.<br>
-</p>
+<div id="outline-container-org4c62944" class="outline-2">
+<h2 id="org4c62944">Introduction</h2>
+</div>
 
-<p>
-Now we need to go one step further and map our nodal basis from the reference tetrahedron to each cell in our mesh. This means we need to create numpy arrays for the coordinates for each node in each cell in our mesh.<br>
-</p>
-</div>
-</div>
-<div id="outline-container-org50b1e2b" class="outline-2">
-<h2 id="org50b1e2b">References</h2>
-<div class="outline-text-2" id="text-org50b1e2b">
+<div id="outline-container-org46eeac2" class="outline-2">
+<h2 id="org46eeac2">References</h2>
+<div class="outline-text-2" id="text-org46eeac2">
 <style>.csl-left-margin{float: left; padding-right: 0em;}
  .csl-right-inline{margin: 0 0 0 0em;}</style><div class="csl-bib-body">
 </div>

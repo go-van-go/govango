@@ -1,0 +1,80 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: DG Method From Scratch (in Python) - Reference Element Operators 
+#+SUBTITLE: Calculating the stiffess, mass, differentiation, vandermonde, and lift matricies needed for our calculations
+#+HTML: <p class="date"><i>last update: Feb 9, 2025</i></p>
+
+* Article Motivation 
+#+BEGIN_QUOTE
+- What are reference element operators?
+- How do we calculate them?
+- Code it in python.
+#+END_QUOTE
+
+* Introduction
+There are a few matrices that are common to many finite element problems. These include the *vandermonde matrix* $V$, *mass matrix* $M$, *stiffness matrix* $S$, *differentiation matrices* $D_r$, $D_s$, $D_t$, and the *lift matrix*, $L$.
+
+These are all *linear operators*. This is the same as saying they can be expressed as a matrix, or that they map a vector space to another vector space.
+#+BEGIN_emphasis
+*Key notation*
+- $u(x,t)$ - Global solution.
+- $u_h(x,t)$ - Approximate solution.
+- $u_h^k(x,t)$ - Local solution on cell $K$.
+- $\mathsf{D}^k$ - The domain of element $k$.
+- $r, s, t$ - coordinates in the reference tetrahedron
+- $(x,y,z)$ - physical coordinates in the mesh
+- 
+#+END_emphasis
+
+#+BEGIN_emphasis
+*Modal Expansion*
+- $u_h^k(x,t) = \displaystyle\sum_{n=1}^{N_p} \hat{u}_h^k(t)\psi_n(x)$ - Modal expansion of local solution.
+- $\hat{\boldsymbol{u}}_h^k = [\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k]^T$ - Local modal solution vector. 
+- $\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k$ - Expansions coefficients.
+- $\psi_n(x)$ - Local polynomial basis functions.
+- $\boldsymbol{\psi} = [\psi_1(x), \ldots, \psi_{N_p}(x)]^T$ - Vector of local test functions.
+- $\hat{\mathcal{M}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \psi_j dx$ - Local mass matrix in modal form
+- $\hat{\mathcal{S}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \displaystyle\frac{d\psi_j}{dx} dx$ - Local stiffness matrix in modal form
+#+END_emphasis
+
+#+BEGIN_emphasis
+*Nodal Expansion*
+- $u_h^k(x,t) = \displaystyle\sum_{i=1}^{N_p}u_h^k(x_i^k, t)\ell_i^k(x)$ - Nodal expansion of the local solution.
+- $x_i^k$ - Nodal points in element $K$.
+- $u_h^k(x_i^k, t)$ - solution value at the nodal points at time $t$.
+- $u_1^k, \ldots, u_{N_p}^k$ - Unknown nodal solution values.
+- $\boldsymbol{u}_h^k = [u_1^k, \ldots, u_{N_p}^k]^T$ - Local nodal solution vector.
+- $\ell_i^k(x)$ - Lagrange polynomials where $\ell_i(x_j) = \delta_{ij}$.
+- $\boldsymbol{\ell}(x)^k = [\ell(x)_1^k, \ldots, \ell(x)_{N_p}^k]^T$ - Vector of Lagrange polynomials
+- $\mathcal{M}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \ell_j^k dx$ - Local mass matrix in nodal form
+- $\mathcal{S}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \displaystyle\frac{d\ell_j^k}{dx} dx$  - Local stiffness matrix in nodal form
+
+#+END_emphasis
+
+The *Vandermonde matrix* $\mathcal{V}\hat{\boldsymbol{u}} = \boldsymbol{u}$ maps the nodal degrees of freedom(DOF) $\hat{u}$ to the coefficients of the expansion of the solution $u_h$.
+
+The *mass matrix* can map the nodal degrees of freedom (DOF) to their weighted inner product with the basis functions.
+
+The *stiffness matrix* can map the DOF to their weighted inner product with the basis derivatives. 
+
+The *differentiation matrices* can map the basis function values to their derivatives.
+
+The *lift matrix* can map the flux values on the faces to updates on the interior of the cell.
+
+These matrices are used to calculate normal vectors (even on curved elements), volume and surface Jacobians (used for mapping from the reference element to the mesh) and for the calculations with the actual physics [cite:@hesthaven2008nodal]. 
+
+* Vandermonde matrix 
+
+* Mass Matrix
+
+* Stiffness Matrix
+
+* Differentiation Matrices
+
+* Lift Matrix
+
+* The ~ElementOperators~ class in python
+
+* Conclusion
+
+* References
+#+print_bibliography:

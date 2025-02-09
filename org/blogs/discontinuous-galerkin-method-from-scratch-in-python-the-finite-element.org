@@ -1,12 +1,12 @@
 #+SETUPFILE: ./blog-styles.org
 #+TITLE: DG Method From Scratch (in Python) - The Finite Element
 #+SUBTITLE: and how to pick the right one for your simulation 
-#+HTML: <p class="date"><i>last update: Feb 3, 2025</i></p>
 
-#+CAPTION: Examples of simple Lagrage elements with optimized quadrature points (shown in blue)
-#+NAME: threexthree-lagrange-grid
-#+ATTR_HTML: :alt Visualzations of simple Lagrage elements with optimized quadrature points :class hero-image 
-[[../../public/3x3lagrange-grid.png]]
+#+HTML: <p class="date"><i>last update: Feb 3, 2025</i></p>
+#+CAPTION: Geometry of a *reference tetrahedron* for a 3D Lagrange element.
+#+NAME: reference-tetrahedron
+#+ATTR_HTML: :alt Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron :class blog-image 
+[[../../public/reference-tetrahedron.png]]
 
 * Article Motivation 
 #+BEGIN_QUOTE
@@ -39,10 +39,6 @@ If $V$ is a vector space over the real numbers $\mathbb{R}$, then the /dual spac
 #+END_extra
 
 If you found the *set of degrees of freedom* in the definition of a finite element to be confusing, its because this definition is attempting to be as general as possible, and encompass all possible types of finite elements.
-#+CAPTION: Geometry of a *reference tetrahedron* for a 3D Lagrange element defined on a tetrahedron.
-#+NAME: reference-tetrahedron
-#+ATTR_HTML: :alt Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron :class blog-image 
-[[../../public/reference-tetrahedron.png]]
 
 Consider a very simple finite element, a *Lagrange* element on a tetrahedral mesh. The volume of the element is the reference tetrahedron (see fig. [[reference-tetrahedron]]). The space of basis functions is a set of polynomials. The degrees of freedom are just the evaluation of these basis functions /at specific points/. In this case we can think of the nodal variables as just a set of points on the tetrahedron.
 

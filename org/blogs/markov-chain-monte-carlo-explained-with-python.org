@@ -1,0 +1,16 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: Markov chain Monte Carlo explained with Python 
+#+SUBTITLE:  What it is and how we can use it to minimize a function. 
+#+HTML: <p class="date"><i>last update: Feb 9, 2025</i></p>
+
+* Article Motivation 
+#+BEGIN_QUOTE
+- What is Markov chain Monte Carlo?
+- How is it used in optimization problems?
+- Code it in python
+#+END_QUOTE
+
+* Introduction
+
+* References
+#+print_bibliography:
