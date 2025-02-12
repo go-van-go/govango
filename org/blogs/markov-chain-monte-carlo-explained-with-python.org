@@ -19,11 +19,11 @@ A simple example of a *Metropolis-Hastings* algorithm used to find a probability
 #+END_QUOTE
 
 * Introduction
-The point I want to make in this article is that, /with real world, noisy data, and a simulation of the damped harmonic oscillator, we can find a probability distribution of possible parameter values using an MCMC method/.
+The point I want to make in this article is that, /with real world, noisy data from a system, and a simulation of that system, we can find a probability distribution of possible parameter values for the system using an MCMC method/.
 
 MCMC is a broad family of sampling algorithms used to sample a probability distribution that is too difficult to sample directly. It was created in Los Alamos in 1953 as the /Metropolis algorithm/ and later generalized in 1973 to the *Metropolis-Hastings (MH)* algorithm [cite:@brooks2011handbook;@calvetti2007introduction].
 
-This MH algorithm is the specific instance of MCMC that were going to focus on in this post. We will consider a simple example, code it up in python, and visualize it using matplotlib.
+This MH algorithm is the specific instance of MCMC that were going to focus on in this post. We will consider a simple example, code it up in python, and visualize it using ~matplotlib~.
 
 #+BEGIN_emphasis
 *Example Problem*
@@ -40,7 +40,7 @@ We even know the initial conditions of the position and velocity, and the mass
 \quad y(0) = 2.0, \quad \frac{dy}{dt} (0) = 0, \quad m = 2.0
 \end{equation*}
 
-Finally, we have a data set, $y_{sample}$ that tells us the displacement of our mass at $n$ time steps
+Finally, we have a noisy data set, $y_{sample}$ that tells us the displacement of our mass at $n$ time steps
 
 \begin{equation*}
 y_{sample} = [y_{s1}, \ldots, y_{sn}]
@@ -51,20 +51,23 @@ Our goal is the use Metropolis-Hastings algorithm to find a probability distribu
 
 Keep in mind that in a simple example like this, there are much easier ways to solve for $k$ and $c$. MCMC shines is in high dimensions spaces. Today we'll just get a better understanding of the basics. 
 
-
 * Setting up the problem
-First we need to initiate the spring constant ~k~, and damping constant ~c~, that we will eventually solve for.
+First we need to initiate the spring constant ~k~, and damping constant ~c~, that we will eventually solve for, along with our initial guesses.
 
 We'll also decide how many times, ~n~,  we want to run our MH algorithm.
 
 Finally we'll set up the time stepping  parameters.
 
 #+BEGIN_SRC python
-# parameters
-m, k, c = 2.0, 4.1, 0.3
-n = 7500  # Number of runs 
+# Parameters
+n = 15000       # Number of runs 
+m = 2.0         # mass
+k = 4.10        # true spring constant
+c = 0.50        # true damping factor
+k_guess = 4.30     # spring constant guess
+c_guess = 0.45  # damping factor guess
 
-# setup timestepping 
+# Setup timestepping 
 t_max = 10
 steps_per_unit_t = 100
 num_t_steps = t_max * steps_per_unit_t + 1
@@ -73,7 +76,6 @@ dt = t[1] - t[0]
 #+END_SRC
 
 * Creating synthetic data
-
 #+BEGIN_extra
 Exact solutions to interesting problems are rare. In the physical world there is noise and uncertainty so we are forced to treat problems as statistical in nature. 
 #+END_extra
@@ -85,19 +87,20 @@ y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
 \end{equation*}
 
 We can just take this and add some Gaussian noise to simulate real world data as follows.
- 
 
 #+BEGIN_SRC python
 # Create synthetic data
 s = 0.1  # Noise level
-w = 2 * s  # Random walk step size
+walk_size_k = 4 * s  # Random walk step size
+walk_size_c = 0.2 * s  # Random walk step size
 num_samples = 50
 # sample 50 time points
 time_samples = np.linspace(1, num_t_steps-1, num_samples, dtype=int)
+time_of_samples = (time_samples - 1) / num_t_steps * t_max 
 # find true solution
 y_true = 2 * np.exp(-c * t / (2 * m)) * np.cos(t * np.sqrt(4 * m * k - c * c) / (2 * m))
 # get only sampled points 
-y_true_sampled = y_true[time_sample]
+y_true_sampled = y_true[time_samples]
 # add Gaussian noise to create synthetic data
 y_synthetic = y_true_sampled + s * np.random.randn(num_samples)
 #+END_SRC
@@ -108,7 +111,6 @@ Now ~y_synthetic~ contains a noisy sample of the displacement of the mass at 50 
 We need a simulation of the damped harmonic oscillator. This means we will need a ODE solver. Instead of trying to make the best ODE solver ever, we'll just use a simple mid point solver.
 
 This will predict the next /half time step value/ using the previous values. Then use the midpoint $y$ to update $y_dot$ and the midpoint $y_dot$ to update $y$.
-
 
 #+BEGIN_SRC python
 def damped_oscillator_solver(m, k, c, y_initial, y_dot_initial, dt, num_t_steps):
@@ -139,7 +141,7 @@ def damped_oscillator_solver(m, k, c, y_initial, y_dot_initial, dt, num_t_steps)
     return y
 #+END_SRC
 
-Here are model is simple, but in a real world MCMC problem our model could be a complicated PDE solver.
+Here our model is simple, but in a real world MCMC problem our model could be a complicated PDE solver.
 
 * Metropolis-Hastings algorithm
 There are a lot of definitions of the MH algorithm that might differ slightly in their notation. Here is a simple explanation.
@@ -218,9 +220,9 @@ import os
 
 def find_spring_params():
     """
-    Given noisy measurements of y, the solution of a damped spring system
-     m * d^2y/dt^2 + c * dy/dt + k * y = 0, with y(0)=2, dy/dt(0)=0.
-     From this, estimate c, k
+    Given noisy measurements of y from a damped spring system
+    m * d^2y/dt^2 + c * dy/dt + k * y = 0, with y(0)=2, dy/dt(0)=0.
+    From this, estimate c, k
     """
     
     # Parameters
@@ -299,16 +301,8 @@ def find_spring_params():
         inputs[:, current_run] = [k_guess, c_guess]
         likelihood[current_run] = old_likelihood
 
-        if current_run < 200:
-            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
-        elif current_run < 2000 and current_run%5==0:
-            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
-        elif current_run > 2000 and current_run%10==0:
-            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
-
-    plot_k_vs_c(inputs)
-    plot_histograms(inputs)
-    plot_best(inputs, y_true, k_guess, c_guess, m, t, time_of_samples, y_synthetic)
+        # Uncomment the following to produce plots
+         # plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
 
 def calculate_likelihood(y_synthetic, y_proposed, s):
     return np.sum((y_synthetic - y_proposed) ** 2)
@@ -339,12 +333,10 @@ def damped_oscillator_solver(m, k, c, y_initial, y_dot_initial, dt, num_t_steps)
         y_dot[t_current] = y_dot[t_prev] - (c/m) * dt * y_dot_mid - (k/m) * dt * y_mid
     
     return y
-
     
 # Run the function
 find_spring_params()
 #+END_SRC
-
 
 * Plotting function
 Using ~matplotlib~ and ~ffmpeg~ we can create the video at the top. Here's the plotting code.
@@ -352,7 +344,7 @@ Using ~matplotlib~ and ~ffmpeg~ we can create the video at the top. Here's the p
 #+BEGIN_SRC python
 
 def plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, n):
-    # --- Plotting settings ---
+    # Colors and parameters 
     edge_color = "#eceff4"
     font_color = "#eceff4"
     bg_color = "#4c566a"
@@ -384,7 +376,6 @@ def plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_s
     axs[0, 1].set_title('Scatter plot of k vs. c', color=font_color)
     ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    
     
     # y_proposed vs yTrue
     axs[1, 0].plot(t, y_true, label='True Solution', color="#b48ead")
@@ -425,7 +416,6 @@ ls frame_*.png | awk 'BEGIN{ a=0 }{ printf "mv %s frame_%04d.png\n", $0, a++ }' 
 
 # create the video
 ffmpeg -framerate 24 -start_number 4 -i frame_%04d.png -vf "scale=1920:1080" -c:v libx264 -pix_fmt yuv420p output.mp4
-
 #+END_SRC
 
 * Conclusion
