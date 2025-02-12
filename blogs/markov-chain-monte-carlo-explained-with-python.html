@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-09 Sun 16:53 -->
+<!-- 2025-02-12 Wed 14:49 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Markov chain Monte Carlo explained with Python</title>
@@ -12,6 +12,38 @@
 <script type="module" src="../assets/js/navbar.js"></script>
 <script type="module" src="../assets/js/main.js"></script>
 <base target="_blank">
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 </head>
 <body>
 <div id="preamble" class="status">
@@ -36,30 +68,577 @@
 <div id="content" class="content">
 <h1 class="title">Markov chain Monte Carlo explained with Python
 <br>
-<span class="subtitle">What it is and how we can use it to minimize a function.</span>
+<span class="subtitle">A simple example</span>
 </h1>
-<p class="date"><i>last update: Feb 9, 2025</i></p>
+<p class="date"><i>last update: Feb 12, 2025</i></p>
+<video class="blog-video" controls>
+<source src="/public/metropolis-hastings-rotated.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<p class="hero-image-caption">
+A simple example of a <b>Metropolis-Hastings</b> algorithm used to find a probability distribution of possible values of the spring constant, \(k\), and the damping factor, \(c\) for a <b>damped harmonic oscillator</b>. Here the true values are \(k = 4.10\), and \(c = 0.50\).<br>
+</p>
 <div id="outline-container-orgaa7edcf" class="outline-2">
 <h2 id="orgaa7edcf">Article Motivation</h2>
 <div class="outline-text-2" id="text-orgaa7edcf">
 <blockquote>
 <ul class="org-ul">
-<li>What is Markov chain Monte Carlo?<br></li>
-<li>How is it used in optimization problems?<br></li>
-<li>Code it in python<br></li>
+<li>What is a Markov chain Monte Carlo?<br></li>
+<li>What is the Metropolis-Hastings algorithm?<br></li>
+<li>Code a simple example in python<br></li>
 </ul>
 </blockquote>
 </div>
 </div>
 <div id="outline-container-org4c62944" class="outline-2">
 <h2 id="org4c62944">Introduction</h2>
+<div class="outline-text-2" id="text-org4c62944">
+<p>
+The point I want to make in this article is that, <i>with real world, noisy data, and a simulation of the damped harmonic oscillator, we can find a probability distribution of possible parameter values using an MCMC method</i>.<br>
+</p>
+
+<p>
+MCMC is a broad family of sampling algorithms used to sample a probability distribution that is too difficult to sample directly. It was created in Los Alamos in 1953 as the <i>Metropolis algorithm</i> and later generalized in 1973 to the <b>Metropolis-Hastings (MH)</b> algorithm [<a href="#citeproc_bib_item_1">1</a>,<a href="#citeproc_bib_item_2">2</a>].<br>
+</p>
+
+<p>
+This MH algorithm is the specific instance of MCMC that were going to focus on in this post. We will consider a simple example, code it up in python, and visualize it using matplotlib.<br>
+</p>
+
+<div class="emphasis" id="orga3283fb">
+<p>
+<b>Example Problem</b><br>
+</p>
+
+<p>
+We have a mass on a spring. We know that this system obeys the following the damped harmoic oscillator equation<br>
+</p>
+
+\begin{equation*}
+m \frac{d^2y}{dt^2} + c \frac{dy}{dt} + k y = 0 
+\end{equation*}
+
+<p>
+We even know the initial conditions of the position and velocity, and the mass<br>
+</p>
+
+\begin{equation*}
+\quad y(0) = 2.0, \quad \frac{dy}{dt} (0) = 0, \quad m = 2.0
+\end{equation*}
+
+<p>
+Finally, we have a data set, \(y_{sample}\) that tells us the displacement of our mass at \(n\) time steps<br>
+</p>
+
+\begin{equation*}
+y_{sample} = [y_{s1}, \ldots, y_{sn}]
+\end{equation*}
+
+<p>
+Our goal is the use Metropolis-Hastings algorithm to find a probability distribution for the spring parameters \(k\), and \(c\).<br>
+</p>
+
 </div>
 
+<p>
+Keep in mind that in a simple example like this, there are much easier ways to solve for \(k\) and \(c\). MCMC shines is in high dimensions spaces. Today we'll just get a better understanding of the basics.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org165cc6e" class="outline-2">
+<h2 id="org165cc6e">Setting up the problem</h2>
+<div class="outline-text-2" id="text-org165cc6e">
+<p>
+First we need to initiate the spring constant <code>k</code>, and damping constant <code>c</code>, that we will eventually solve for.<br>
+</p>
+
+<p>
+We'll also decide how many times, <code>n</code>,  we want to run our MH algorithm.<br>
+</p>
+
+<p>
+Finally we'll set up the time stepping  parameters.<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #6f7787;"># </span><span style="color: #6f7787;">parameters</span>
+<span style="color: #D8DEE9;">m</span>, <span style="color: #D8DEE9;">k</span>, <span style="color: #D8DEE9;">c</span> = 2.0, 4.1, 0.3
+<span style="color: #D8DEE9;">n</span> = 7500  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Number of runs </span>
+
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">setup timestepping </span>
+<span style="color: #D8DEE9;">t_max</span> = 10
+<span style="color: #D8DEE9;">steps_per_unit_t</span> = 100
+<span style="color: #D8DEE9;">num_t_steps</span> = t_max * steps_per_unit_t + 1
+<span style="color: #D8DEE9;">t</span> = np.linspace(0, t_max, num_t_steps)
+<span style="color: #D8DEE9;">dt</span> = t[1] - t[0]
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org6f689d8" class="outline-2">
+<h2 id="org6f689d8">Creating synthetic data</h2>
+<div class="outline-text-2" id="text-org6f689d8">
+<div class="extra" id="orgaeda7fb">
+<p>
+Exact solutions to interesting problems are rare. In the physical world there is noise and uncertainty so we are forced to treat problems as statistical in nature.<br>
+</p>
+
+</div>
+
+<p>
+We'll create some synthetic data for our problem. In this simple problem we know the analytical solution of a damped harmonic oscillator.<br>
+</p>
+
+\begin{equation*}
+y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
+\end{equation*}
+
+<p>
+We can just take this and add some Gaussian noise to simulate real world data as follows.<br>
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #6f7787;"># </span><span style="color: #6f7787;">Create synthetic data</span>
+<span style="color: #D8DEE9;">s</span> = 0.1  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Noise level</span>
+<span style="color: #D8DEE9;">w</span> = 2 * s  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Random walk step size</span>
+<span style="color: #D8DEE9;">num_samples</span> = 50
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">sample 50 time points</span>
+<span style="color: #D8DEE9;">time_samples</span> = np.linspace(1, num_t_steps-1, num_samples, dtype=<span style="color: #81A1C1;">int</span>)
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">find true solution</span>
+<span style="color: #D8DEE9;">y_true</span> = 2 * np.exp(-c * t / (2 * m)) * np.cos(t * np.sqrt(4 * m * k - c * c) / (2 * m))
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">get only sampled points </span>
+<span style="color: #D8DEE9;">y_true_sampled</span> = y_true[time_sample]
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">add Gaussian noise to create synthetic data</span>
+<span style="color: #D8DEE9;">y_synthetic</span> = y_true_sampled + s * np.random.randn(num_samples)
+</pre>
+</div>
+
+<p>
+Now <code>y_synthetic</code> contains a noisy sample of the displacement of the mass at 50 points in our time interval. We could think of this as our experimental data.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org5034495" class="outline-2">
+<h2 id="org5034495">Damped harmonic oscillator simulation</h2>
+<div class="outline-text-2" id="text-org5034495">
+<p>
+We need a simulation of the damped harmonic oscillator. This means we will need a ODE solver. Instead of trying to make the best ODE solver ever, we'll just use a simple mid point solver.<br>
+</p>
+
+<p>
+This will predict the next <i>half time step value</i> using the previous values. Then use the midpoint \(y\) to update \(y_dot\) and the midpoint \(y_dot\) to update \(y\).<br>
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">damped_oscillator_solver</span>(m, k, c, y_initial, y_dot_initial, dt, num_t_steps):
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">initialize y and y dot</span>
+    <span style="color: #D8DEE9;">y</span> = np.zeros(num_t_steps)
+    <span style="color: #D8DEE9;">y_dot</span> = np.zeros(num_t_steps)
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">set initial conditions</span>
+    <span style="color: #D8DEE9;">y</span>[0] = y_initial
+    <span style="color: #D8DEE9;">y_dot</span>[0] = y_dot_initial
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">compute half time step for midpoint rule </span>
+    <span style="color: #D8DEE9;">ddt</span> = 0.5 * dt
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">time loop using midpoint rule</span>
+    <span style="color: #81A1C1;">for</span> t_current <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1, num_t_steps):
+        <span style="color: #D8DEE9;">t_prev</span> = t_current - 1  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">previous time index</span>
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">compute midpoint estimate for y and y dot</span>
+        <span style="color: #D8DEE9;">y_mid</span> = y[t_prev] + ddt * y_dot[t_prev]
+        <span style="color: #D8DEE9;">y_dot_mid</span> = y_dot[t_prev] - (c/m) * ddt * y_dot[t_prev] - (k/m) * ddt * y[t_prev]
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update y with y_dot at midpoint</span>
+        <span style="color: #D8DEE9;">y</span>[t_current] = y[t_prev] + dt * y_dot_mid
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update y_dot with acceleration at midpoint</span>
+        <span style="color: #D8DEE9;">y_dot</span>[t_current] = y_dot[t_prev] - (c/m) * dt * y_dot_mid - (k/m) * dt * y_mid
+    
+    <span style="color: #81A1C1;">return</span> y
+</pre>
+</div>
+
+<p>
+Here are model is simple, but in a real world MCMC problem our model could be a complicated PDE solver.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org108b8fe" class="outline-2">
+<h2 id="org108b8fe">Metropolis-Hastings algorithm</h2>
+<div class="outline-text-2" id="text-org108b8fe">
+<p>
+There are a lot of definitions of the MH algorithm that might differ slightly in their notation. Here is a simple explanation.<br>
+</p>
+
+<div class="emphasis" id="org1c98790">
+<p>
+<b>Steps in the Metropolis-Hastings algorithm</b><br>
+</p>
+
+<ol class="org-ol">
+<li>Take a random walk away from your current guess. Call this the <b>proposed guess</b>.<br></li>
+<li>Solve the simulation with the proposed values.<br></li>
+<li>Create a <b>likelihood function</b> that tells you how similar that simulation is to your measured values.<br></li>
+<li>Calculate an <b>acceptance ratio</b> to decide if we should accept the proposal or not.<br></li>
+<li>Accept or reject the proposal<br>
+<ol class="org-ol">
+<li>Generate a random number<br></li>
+<li>If that random number is less than alpha, then accept, otherwise reject.<br></li>
+</ol></li>
+<li>Repeat<br></li>
+</ol>
+
+</div>
+
+<p>
+Using these guidelines we produce the following code<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #6f7787;"># </span><span style="color: #6f7787;">initialze arrays to keep track of likelihood</span>
+<span style="color: #D8DEE9;">likelihood</span> = np.zeros(n)
+<span style="color: #D8DEE9;">initial_likelihood</span> = calculate_likelihood(y_synthetic, y_true_sampled, s)
+<span style="color: #D8DEE9;">likelihood</span>[0] = initial_likelihood
+<span style="color: #D8DEE9;">old_likelihood</span> = initial_likelihood
+
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">array of spring parameter guesses</span>
+<span style="color: #D8DEE9;">inputs</span> = np.zeros((2, n))
+<span style="color: #D8DEE9;">inputs</span>[:, 0] = [k_guess, c_guess]
+
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">Run Metropolis-Hastings iteration</span>
+<span style="color: #81A1C1;">for</span> current_run <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1, n):
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">propose next guesses for k and c</span>
+    <span style="color: #D8DEE9;">kp</span> = <span style="color: #81A1C1;">abs</span>(k_guess + walk_size_k * (2 * np.random.rand() - 1))
+    <span style="color: #D8DEE9;">cp</span> = <span style="color: #81A1C1;">abs</span>(c_guess + walk_size_c * (2 * np.random.rand() - 1))
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">solve simulation with proposed values for k and c</span>
+    <span style="color: #D8DEE9;">y_initial</span> = 2.0
+    <span style="color: #D8DEE9;">y_dot_initial</span> = 0.0
+    <span style="color: #D8DEE9;">y_proposed</span> = damped_oscillator_solver(m, kp, cp,
+                                          y_initial,
+                                          y_dot_initial,
+                                          dt, num_t_steps)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get values at selected time samples</span>
+    <span style="color: #D8DEE9;">y_proposed_sampled</span> = y_proposed[time_samples]
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">calculate the likelihood of the new data</span>
+    <span style="color: #D8DEE9;">new_likelihood</span> = calculate_likelihood(y_synthetic, y_proposed_sampled, s)
+
+    <span style="color: #D8DEE9;">ratio</span> = np.exp(-(new_likelihood - old_likelihood) / 2)
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">rejection criteria </span>
+    <span style="color: #D8DEE9;">acceptance_ratio</span> = <span style="color: #81A1C1;">min</span>(1, ratio)
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">accept new k and c values</span>
+    <span style="color: #81A1C1;">if</span> np.random.rand() &lt; acceptance_ratio:
+        <span style="color: #D8DEE9;">k_guess</span>, <span style="color: #D8DEE9;">c_guess</span> = kp, cp
+        <span style="color: #D8DEE9;">old_likelihood</span> = new_likelihood
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update guesses and likelihood</span>
+    <span style="color: #D8DEE9;">inputs</span>[:, current_run] = [k_guess, c_guess]
+    <span style="color: #D8DEE9;">likelihood</span>[current_run] = old_likelihood
+</pre>
+</div>
+
+<p>
+Now we have an MH algorithm that can sample our unknown distribution. If we keep track of this sampling we can find a probability distribution for our damped spring parameters.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org24892fd" class="outline-2">
+<h2 id="org24892fd">Putting it all together</h2>
+<div class="outline-text-2" id="text-org24892fd">
+<p>
+Taking all the code we've written so far and putting it together we get:<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+<span style="color: #81A1C1;">from</span> scipy.stats <span style="color: #81A1C1;">import</span> mode
+<span style="color: #81A1C1;">import</span> matplotlib.pyplot <span style="color: #81A1C1;">as</span> plt
+<span style="color: #81A1C1;">from</span> matplotlib.ticker <span style="color: #81A1C1;">import</span> FormatStrFormatter
+<span style="color: #81A1C1;">import</span> os
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">find_spring_params</span>():
+    <span style="color: #78808f;">"""</span>
+<span style="color: #78808f;">    Given noisy measurements of y, the solution of a damped spring system</span>
+<span style="color: #78808f;">     m * d^2y/dt^2 + c * dy/dt + k * y = 0, with y(0)=2, dy/dt(0)=0.</span>
+<span style="color: #78808f;">     From this, estimate c, k</span>
+<span style="color: #78808f;">    """</span>
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Parameters</span>
+    <span style="color: #D8DEE9;">n</span> = 15000       <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Number of runs </span>
+    <span style="color: #D8DEE9;">m</span> = 2.0         <span style="color: #6f7787;"># </span><span style="color: #6f7787;">mass</span>
+    <span style="color: #D8DEE9;">k</span> = 4.10        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">true spring constant</span>
+    <span style="color: #D8DEE9;">c</span> = 0.50        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">true damping factor</span>
+    <span style="color: #D8DEE9;">k_guess</span> = 3.8     <span style="color: #6f7787;"># </span><span style="color: #6f7787;">spring constant guess</span>
+    <span style="color: #D8DEE9;">c_guess</span> = 0.40  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">damping factor guess</span>
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Setup timestepping </span>
+    <span style="color: #D8DEE9;">t_max</span> = 10
+    <span style="color: #D8DEE9;">steps_per_unit_t</span> = 100
+    <span style="color: #D8DEE9;">num_t_steps</span> = t_max * steps_per_unit_t + 1
+    <span style="color: #D8DEE9;">t</span> = np.linspace(0, t_max, num_t_steps)
+    <span style="color: #D8DEE9;">dt</span> = t[1] - t[0]
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Create folder to store plots</span>
+    os.makedirs(<span style="color: #A3BE8C;">"mcmc_images"</span>, exist_ok=<span style="color: #81A1C1;">True</span>)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Create synthetic data</span>
+    <span style="color: #D8DEE9;">s</span> = 0.1  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Noise level</span>
+    <span style="color: #D8DEE9;">walk_size_k</span> = 2 * s  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Random walk step size</span>
+    <span style="color: #D8DEE9;">walk_size_c</span> = 0.1 * s  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Random walk step size</span>
+    <span style="color: #D8DEE9;">num_samples</span> = 50
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">sample 50 time points</span>
+    <span style="color: #D8DEE9;">time_samples</span> = np.linspace(1, num_t_steps-1, num_samples, dtype=<span style="color: #81A1C1;">int</span>)
+    <span style="color: #D8DEE9;">time_of_samples</span> = (time_samples - 1) / num_t_steps * t_max 
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">find true solution</span>
+    <span style="color: #D8DEE9;">y_true</span> = 2 * np.exp(-c * t / (2 * m)) * np.cos(t * np.sqrt(4 * m * k - c * c) / (2 * m))
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get only sampled points </span>
+    <span style="color: #D8DEE9;">y_true_sampled</span> = y_true[time_samples]
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">add Gaussian noise to create synthetic data</span>
+    <span style="color: #D8DEE9;">y_synthetic</span> = y_true_sampled + s * np.random.randn(num_samples)
+   
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">initialze arrays to keep track of likelihood</span>
+    <span style="color: #D8DEE9;">likelihood</span> = np.zeros(n)
+    <span style="color: #D8DEE9;">initial_likelihood</span> = calculate_likelihood(y_synthetic, y_true_sampled, s)
+    <span style="color: #D8DEE9;">likelihood</span>[0] = initial_likelihood
+    <span style="color: #D8DEE9;">old_likelihood</span> = initial_likelihood
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">array of spring parameter guesses</span>
+    <span style="color: #D8DEE9;">inputs</span> = np.zeros((2, n))
+    <span style="color: #D8DEE9;">inputs</span>[:, 0] = [k_guess, c_guess]
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Run Metropolis-Hastings iteration</span>
+    <span style="color: #81A1C1;">for</span> current_run <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1, n):
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">propose next guesses for k and c</span>
+        <span style="color: #D8DEE9;">kp</span> = <span style="color: #81A1C1;">abs</span>(k_guess + walk_size_k * (2 * np.random.rand() - 1))
+        <span style="color: #D8DEE9;">cp</span> = <span style="color: #81A1C1;">abs</span>(c_guess + walk_size_c * (2 * np.random.rand() - 1))
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">solve simulation with proposed values for k and c</span>
+        <span style="color: #D8DEE9;">y_initial</span> = 2.0
+        <span style="color: #D8DEE9;">y_dot_initial</span> = 0.0
+        <span style="color: #D8DEE9;">y_proposed</span> = damped_oscillator_solver(m, kp, cp,
+                                              y_initial,
+                                              y_dot_initial,
+                                              dt, num_t_steps)
+        
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get values at selected time samples</span>
+        <span style="color: #D8DEE9;">y_proposed_sampled</span> = y_proposed[time_samples]
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">calculate the likelihood of the new data</span>
+        <span style="color: #D8DEE9;">new_likelihood</span> = calculate_likelihood(y_synthetic, y_proposed_sampled, s)
+
+        <span style="color: #D8DEE9;">ratio</span> = np.exp(-(new_likelihood - old_likelihood) / 2)
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">rejection criteria </span>
+        <span style="color: #D8DEE9;">acceptance_ratio</span> = <span style="color: #81A1C1;">min</span>(1, ratio)
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">accept new k and c values</span>
+        <span style="color: #81A1C1;">if</span> np.random.rand() &lt; acceptance_ratio:
+            <span style="color: #D8DEE9;">k_guess</span>, <span style="color: #D8DEE9;">c_guess</span> = kp, cp
+            <span style="color: #D8DEE9;">old_likelihood</span> = new_likelihood
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update guesses and likelihood</span>
+        <span style="color: #D8DEE9;">inputs</span>[:, current_run] = [k_guess, c_guess]
+        <span style="color: #D8DEE9;">likelihood</span>[current_run] = old_likelihood
+
+        <span style="color: #81A1C1;">if</span> current_run &lt; 200:
+            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
+        <span style="color: #81A1C1;">elif</span> current_run &lt; 2000 <span style="color: #81A1C1;">and</span> current_run%5==0:
+            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
+        <span style="color: #81A1C1;">elif</span> current_run &gt; 2000 <span style="color: #81A1C1;">and</span> current_run%10==0:
+            plot_data(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, current_run)
+
+    plot_k_vs_c(inputs)
+    plot_histograms(inputs)
+    plot_best(inputs, y_true, k_guess, c_guess, m, t, time_of_samples, y_synthetic)
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">calculate_likelihood</span>(y_synthetic, y_proposed, s):
+    <span style="color: #81A1C1;">return</span> np.<span style="color: #81A1C1;">sum</span>((y_synthetic - y_proposed) ** 2)
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">damped_oscillator_solver</span>(m, k, c, y_initial, y_dot_initial, dt, num_t_steps):
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">initialize y and y dot</span>
+    <span style="color: #D8DEE9;">y</span> = np.zeros(num_t_steps)
+    <span style="color: #D8DEE9;">y_dot</span> = np.zeros(num_t_steps)
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">set initial conditions</span>
+    <span style="color: #D8DEE9;">y</span>[0] = y_initial
+    <span style="color: #D8DEE9;">y_dot</span>[0] = y_dot_initial
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">compute half time step for midpoint rule </span>
+    <span style="color: #D8DEE9;">ddt</span> = 0.5 * dt
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">time loop using midpoint rule</span>
+    <span style="color: #81A1C1;">for</span> t_current <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(1, num_t_steps):
+        <span style="color: #D8DEE9;">t_prev</span> = t_current - 1  <span style="color: #6f7787;"># </span><span style="color: #6f7787;">previous time index</span>
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">compute midpoint estimate for y and y dot</span>
+        <span style="color: #D8DEE9;">y_mid</span> = y[t_prev] + ddt * y_dot[t_prev]
+        <span style="color: #D8DEE9;">y_dot_mid</span> = y_dot[t_prev] - (c/m) * ddt * y_dot[t_prev] - (k/m) * ddt * y[t_prev]
+
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update y with y_dot at midpoint</span>
+        <span style="color: #D8DEE9;">y</span>[t_current] = y[t_prev] + dt * y_dot_mid
+        <span style="color: #6f7787;"># </span><span style="color: #6f7787;">update y_dot with acceleration at midpoint</span>
+        <span style="color: #D8DEE9;">y_dot</span>[t_current] = y_dot[t_prev] - (c/m) * dt * y_dot_mid - (k/m) * dt * y_mid
+    
+    <span style="color: #81A1C1;">return</span> y
+
+    
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">Run the function</span>
+find_spring_params()
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc9bc9a4" class="outline-2">
+<h2 id="orgc9bc9a4">Plotting function</h2>
+<div class="outline-text-2" id="text-orgc9bc9a4">
+<p>
+Using <code>matplotlib</code> and <code>ffmpeg</code> we can create the video at the top. Here's the plotting code.<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python">
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">plot_data</span>(current_run, inputs, y_true, y_synthetic, y_proposed, t, time_of_samples, m, n):
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">--- Plotting settings ---</span>
+    <span style="color: #D8DEE9;">edge_color</span> = <span style="color: #A3BE8C;">"#eceff4"</span>
+    <span style="color: #D8DEE9;">font_color</span> = <span style="color: #A3BE8C;">"#eceff4"</span>
+    <span style="color: #D8DEE9;">bg_color</span> = <span style="color: #A3BE8C;">"#4c566a"</span>
+    <span style="color: #D8DEE9;">axis_color</span> = <span style="color: #A3BE8C;">"#eceff4"</span>
+    <span style="color: #D8DEE9;">border_color</span> = <span style="color: #A3BE8C;">"#eceff4"</span>
+    <span style="color: #D8DEE9;">bins</span> = 50
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Create figure and subplots</span>
+    <span style="color: #D8DEE9;">fig</span>, <span style="color: #D8DEE9;">axs</span> = plt.subplots(2, 2, figsize=(12, 8), facecolor=bg_color)
+    fig.patch.set_facecolor(bg_color)
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Add a supertitle for the figure</span>
+    fig.suptitle(f<span style="color: #A3BE8C;">"Run </span>{n}<span style="color: #A3BE8C;">"</span>, x=0.511, color=font_color, fontsize=16)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Apply common settings to every subplot</span>
+    <span style="color: #81A1C1;">for</span> ax <span style="color: #81A1C1;">in</span> axs.flat:
+        ax.tick_params(axis=<span style="color: #A3BE8C;">'both'</span>, colors=axis_color)
+        <span style="color: #81A1C1;">for</span> spine <span style="color: #81A1C1;">in</span> ax.spines.values():
+            spine.set_color(border_color)
+        ax.set_facecolor(bg_color)
+        ax.xaxis.label.set_color(font_color)
+        ax.yaxis.label.set_color(font_color)
+        ax.title.set_color(font_color)
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Scatter plot of k vs. c</span>
+    axs[0, 1].scatter(inputs[0, :current_run], inputs[1, :current_run], color=font_color, alpha=0.2)
+    axs[0, 1].set_xlabel(<span style="color: #A3BE8C;">'k'</span>, color=font_color)
+    axs[0, 1].set_ylabel(<span style="color: #A3BE8C;">'c'</span>, color=font_color)
+    axs[0, 1].set_title(<span style="color: #A3BE8C;">'Scatter plot of k vs. c'</span>, color=font_color)
+    ax.xaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.2f'</span>))
+    ax.yaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.2f'</span>))
+    
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">y_proposed vs yTrue</span>
+    axs[1, 0].plot(t, y_true, label=<span style="color: #A3BE8C;">'True Solution'</span>, color=<span style="color: #A3BE8C;">"#b48ead"</span>)
+    axs[1, 0].plot(t, y_proposed, label=<span style="color: #A3BE8C;">'Current Guess'</span>, color=<span style="color: #A3BE8C;">"#ebcb8b"</span>)
+    axs[1, 0].scatter(time_of_samples, y_synthetic, color=<span style="color: #A3BE8C;">"#b48ead"</span>, marker=<span style="color: #A3BE8C;">'.'</span>, label=<span style="color: #A3BE8C;">'Measurements'</span>)
+    axs[1, 0].legend(facecolor=bg_color, labelcolor=font_color, loc=<span style="color: #A3BE8C;">"upper right"</span>)
+    axs[1, 0].set_title(<span style="color: #A3BE8C;">'Current y_proposed vs y_true'</span>, color=font_color)
+    axs[1, 0].set_xlabel(<span style="color: #A3BE8C;">'time'</span>, color=font_color)
+    axs[1, 0].set_ylim(-2.1, 2.5)
+    axs[1, 0].xaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.0f'</span>))
+    axs[1, 0].yaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.1f'</span>))
+   
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Histogram of k values</span>
+    axs[1, 1].hist(inputs[0, :current_run], bins=bins, color=<span style="color: #A3BE8C;">"#5e81ac"</span>, edgecolor=edge_color)
+    axs[1, 1].set_xlabel(<span style="color: #A3BE8C;">'k values'</span>, color=font_color)
+    axs[1, 1].set_title(<span style="color: #A3BE8C;">'Histogram of k'</span>, color=font_color)
+    axs[1, 1].xaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.2f'</span>))
+    axs[1, 1].yaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.0f'</span>))
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Histogram of c values</span>
+    axs[0, 0].hist(inputs[1, :current_run], bins=bins, orientation=<span style="color: #A3BE8C;">"horizontal"</span>, color=<span style="color: #A3BE8C;">"#bf616a"</span>, edgecolor=edge_color)
+    axs[0, 0].set_ylabel(<span style="color: #A3BE8C;">'c values'</span>, color=font_color)
+    axs[0, 0].set_title(<span style="color: #A3BE8C;">'Histogram of c'</span>, color=font_color)
+    axs[0, 0].xaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.0f'</span>))
+    axs[0, 0].yaxis.set_major_formatter(FormatStrFormatter(<span style="color: #A3BE8C;">'%.2f'</span>))
+  
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Save the figure</span>
+    plt.subplots_adjust(hspace=0.3)
+    plt.savefig(f<span style="color: #A3BE8C;">'mcmc_images/frame_</span>{current_run:06d}<span style="color: #A3BE8C;">.png'</span>)
+    plt.close()
+</pre>
+</div>
+
+<p>
+Don't forget to include <code>plot_data()</code> in the time loop of the code if you want to produce the graphs. They will output to a folder called <code>mcmc_images/</code>. Using the following Linux terminal commands we can reproduce the movie above (with a different random noise in the measurements).<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #6f7787;"># </span><span style="color: #6f7787;">fix the file names</span>
+ls frame_*.png | awk <span style="color: #A3BE8C;">'BEGIN{ a=0 }{ printf "mv %s frame_%04d.png\n", $0, a++ }'</span> | bash
+
+<span style="color: #6f7787;"># </span><span style="color: #6f7787;">create the video</span>
+ffmpeg -framerate 24 -start_number 4 -i frame_%04d.png -vf <span style="color: #A3BE8C;">"scale=1920:1080"</span> -c:v libx264 -pix_fmt yuv420p output.mp4
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc9de046" class="outline-2">
+<h2 id="orgc9de046">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc9de046">
+<p>
+With a numerical simulation (like an ODE or a PDE solver), of a system with \(p\) parameters, and experimental data from the real life system, we can use an MCMC to produce a probability distribution of the parameters that produced the experimental data.<br>
+</p>
+
+<p>
+I've shown that here in a very simple way using synthetic data from a damped harmonic oscillator and a simple ODE solver.<br>
+</p>
+
+<p>
+However, MCMC algorithms are high configurable. What we've done here is just the tip of the iceberg.<br>
+</p>
+
+<p>
+For example, here we've used a <b>uniform random walk</b> for the <i>proposal distribution</i>. We could tweak the <b>hyper-parameters</b> of our distribution, like the walk size, or we could use an entirely different proposal distribution that might be better suited for the problem.<br>
+</p>
+
+<p>
+We used an <b>L2 norm</b> as our likelihood function and an exponential function for our acceptance ratio. These could both be improved upon.<br>
+</p>
+
+<p>
+Advanced techniques like <b>delayed rejection</b>, can help keep interesting points that might otherwise be lost.<br>
+</p>
+
+<p>
+<b>Simulated Annealing</b> is a way of using this process to find maximum and minimum of functions.<br>
+</p>
+
+<p>
+Overall, when dealing with messy, high dimensional data, MCMC is a very effective way of exploring an unknown probability distribution, and extracting interesting information from it.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org97f050a" class="outline-2">
+<h2 id="org97f050a">Code</h2>
+<div class="outline-text-2" id="text-org97f050a">
+<p>
+All code the above code is available <a href="https://github.com/go-van-go/govango-code/tree/main/markov-chain-monte-carlo">on the github page.</a><br>
+</p>
+</div>
+</div>
 <div id="outline-container-org46eeac2" class="outline-2">
 <h2 id="org46eeac2">References</h2>
 <div class="outline-text-2" id="text-org46eeac2">
 <style>.csl-left-margin{float: left; padding-right: 0em;}
- .csl-right-inline{margin: 0 0 0 0em;}</style><div class="csl-bib-body">
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Brooks S, Gelman A, Jones G, Meng XL, editors. <a href="https://doi.org/10.1201/b10905">Handbook of markov chain monte carlo</a>. 1st ed. Chapman and Hall/CRC; 2011. Available from Handbook of markov chain monte carlo.</div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_2"></a>
+    <div class="csl-left-margin">2. </div><div class="csl-right-inline">Calvetti D, Somersalo E. <a href="https://doi.org/10.1007/978-0-387-73394-4">An introduction to bayesian scientific computing: Ten lectures on subjective computing</a>. Springer New York, NY; 2007. (Surveys and tutorials in the applied mathematical sciences; vol. 1). Available from An introduction to bayesian scientific computing: Ten lectures on subjective computing.</div>
+  </div>
 </div>
 </div>
 </div>
