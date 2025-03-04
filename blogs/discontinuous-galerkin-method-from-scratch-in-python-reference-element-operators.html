@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-12 Wed 15:48 -->
+<!-- 2025-03-02 Sun 17:07 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - Reference Element Operators</title>
@@ -68,9 +68,9 @@
 <div id="content" class="content">
 <h1 class="title">DG Method From Scratch (in Python) - Reference Element Operators
 <br>
-<span class="subtitle">Calculating the stiffess, mass, differentiation, vandermonde, and lift matricies needed for our calculations</span>
+<span class="subtitle">Calculating the stiffess, mass, differentiation, vandermonde, and lift matricies needed for our simulation</span>
 </h1>
-<p class="date"><i>last update: Feb 9, 2025</i></p>
+<p class="date"><i>last update: Feb 13, 2025</i></p>
 <div id="outline-container-org18fa8e5" class="outline-2">
 <h2 id="org18fa8e5">Article Motivation</h2>
 <div class="outline-text-2" id="text-org18fa8e5">
@@ -78,7 +78,7 @@
 <ul class="org-ul">
 <li>What are reference element operators?<br></li>
 <li>How do we calculate them?<br></li>
-<li>Code it in python.<br></li>
+<li>Create a <code>referenceElementOperators</code> class it in python.<br></li>
 </ul>
 </blockquote>
 </div>
@@ -87,13 +87,26 @@
 <h2 id="org1d3a7bf">Introduction</h2>
 <div class="outline-text-2" id="text-org1d3a7bf">
 <p>
-There are a few matrices that are common to many finite element problems. These include the <b>vandermonde matrix</b> \(V\), <b>mass matrix</b> \(M\), <b>stiffness matrix</b> \(S\), <b>differentiation matrices</b> \(D_r\), \(D_s\), \(D_t\), and the <b>lift matrix</b>, \(L\).<br>
+There are a few matrices that are common to many finite element problems. These include the <b>vandermonde matrix</b> \(V\), <b>mass matrix</b> \(M\), <b>stiffness matrix</b> \(S\), <b>differentiation matrices</b> \(D_r\), \(D_s\), \(D_t\).<br>
 </p>
 
 <p>
-These are all <b>linear operators</b>. This is the same as saying they can be expressed as a matrix, or that they map a vector space to another vector space.<br>
+The Discontinuous Galerkin method also uses the <b>lift matrix</b>, \(L\) for calculating the fluxes as the faces of cells.<br>
 </p>
-<div class="emphasis" id="orga6c0961">
+
+<p>
+These all operate only on the reference element, so we only need to make them one time and we can reuse them for every calculation.<br>
+</p>
+
+<p>
+Reference element operators are all <b>linear operators</b>. This is the same as saying they can be expressed as a matrix. Or that they map a vector space to another vector space.<br>
+</p>
+
+<p>
+In this article I'll use the following notation:<br>
+</p>
+
+<div class="emphasis" id="org9e37799">
 <p>
 <b>Key notation</b><br>
 </p>
@@ -102,14 +115,13 @@ These are all <b>linear operators</b>. This is the same as saying they can be ex
 <li>\(u_h(x,t)\) - Approximate solution.<br></li>
 <li>\(u_h^k(x,t)\) - Local solution on cell \(K\).<br></li>
 <li>\(\mathsf{D}^k\) - The domain of element \(k\).<br></li>
-<li>\(r, s, t\) - coordinates in the reference tetrahedron<br></li>
+<li>\((r, s, t)\) - coordinates in the reference tetrahedron<br></li>
 <li>\((x,y,z)\) - physical coordinates in the mesh<br></li>
-<li></li>
 </ul>
 
 </div>
 
-<div class="emphasis" id="orgc93a846">
+<div class="emphasis" id="orgfb2a32f">
 <p>
 <b>Modal Expansion</b><br>
 </p>
@@ -117,7 +129,7 @@ These are all <b>linear operators</b>. This is the same as saying they can be ex
 <li>\(u_h^k(x,t) = \displaystyle\sum_{n=1}^{N_p} \hat{u}_h^k(t)\psi_n(x)\) - Modal expansion of local solution.<br></li>
 <li>\(\hat{\boldsymbol{u}}_h^k = [\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k]^T\) - Local modal solution vector.<br></li>
 <li>\(\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k\) - Expansions coefficients.<br></li>
-<li>\(\psi_n(x)\) - Local polynomial basis functions.<br></li>
+<li>\(\psi_n(x)\) - Local polynomial basis functions. Orthogonal on reference tetrahedron.<br></li>
 <li>\(\boldsymbol{\psi} = [\psi_1(x), \ldots, \psi_{N_p}(x)]^T\) - Vector of local test functions.<br></li>
 <li>\(\hat{\mathcal{M}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \psi_j dx\) - Local mass matrix in modal form<br></li>
 <li>\(\hat{\mathcal{S}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \displaystyle\frac{d\psi_j}{dx} dx\) - Local stiffness matrix in modal form<br></li>
@@ -125,9 +137,10 @@ These are all <b>linear operators</b>. This is the same as saying they can be ex
 
 </div>
 
-<div class="emphasis" id="org5cfce81">
+<div class="emphasis" id="org26f31af">
 <p>
 <b>Nodal Expansion</b><br>
+The solution is represented by its values at these nodal points, and the Lagrange polynomials interpolate between them.<br>
 </p>
 <ul class="org-ul">
 <li>\(u_h^k(x,t) = \displaystyle\sum_{i=1}^{N_p}u_h^k(x_i^k, t)\ell_i^k(x)\) - Nodal expansion of the local solution.<br></li>
@@ -135,7 +148,7 @@ These are all <b>linear operators</b>. This is the same as saying they can be ex
 <li>\(u_h^k(x_i^k, t)\) - solution value at the nodal points at time \(t\).<br></li>
 <li>\(u_1^k, \ldots, u_{N_p}^k\) - Unknown nodal solution values.<br></li>
 <li>\(\boldsymbol{u}_h^k = [u_1^k, \ldots, u_{N_p}^k]^T\) - Local nodal solution vector.<br></li>
-<li>\(\ell_i^k(x)\) - Lagrange polynomials where \(\ell_i(x_j) = \delta_{ij}\).<br></li>
+<li>\(\ell_i^k(x)\) - Interpolating Lagrange polynomials where \(\ell_i(x_j) = \delta_{ij}\).<br></li>
 <li>\(\boldsymbol{\ell}(x)^k = [\ell(x)_1^k, \ldots, \ell(x)_{N_p}^k]^T\) - Vector of Lagrange polynomials<br></li>
 <li>\(\mathcal{M}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \ell_j^k dx\) - Local mass matrix in nodal form<br></li>
 <li>\(\mathcal{S}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \displaystyle\frac{d\ell_j^k}{dx} dx\)  - Local stiffness matrix in nodal form<br></li>
@@ -144,50 +157,191 @@ These are all <b>linear operators</b>. This is the same as saying they can be ex
 </div>
 
 <p>
-The <b>Vandermonde matrix</b> \(\mathcal{V}\hat{\boldsymbol{u}} = \boldsymbol{u}\) maps the nodal degrees of freedom(DOF) \(\hat{u}\) to the coefficients of the expansion of the solution \(u_h\).<br>
-</p>
-
-<p>
-The <b>mass matrix</b> can map the nodal degrees of freedom (DOF) to their weighted inner product with the basis functions.<br>
-</p>
-
-<p>
-The <b>stiffness matrix</b> can map the DOF to their weighted inner product with the basis derivatives.<br>
-</p>
-
-<p>
-The <b>differentiation matrices</b> can map the basis function values to their derivatives.<br>
-</p>
-
-<p>
-The <b>lift matrix</b> can map the flux values on the faces to updates on the interior of the cell.<br>
-</p>
-
-<p>
 These matrices are used to calculate normal vectors (even on curved elements), volume and surface Jacobians (used for mapping from the reference element to the mesh) and for the calculations with the actual physics [<a href="#citeproc_bib_item_1">1</a>].<br>
+</p>
+
+<p>
+Our goal is to code them all up in python and put them in a <code>referenceElementsOperators</code> class.<br>
+</p>
+
+<p>
+We'll discuss each of them below.<br>
 </p>
 </div>
 </div>
 <div id="outline-container-orgb8db024" class="outline-2">
 <h2 id="orgb8db024">Vandermonde matrix</h2>
+<div class="outline-text-2" id="text-orgb8db024">
+\begin{equation*}
+\mathcal{V} \hat{\boldsymbol{u}} = \boldsymbol{u}, \quad \mathcal{V}_{ij} = \psi_j(\boldsymbol{r}_i)
+\end{equation*}
+
+\begin{equation*}
+\mathcal{V}_{r,(i,j)} = \frac{\delta \psi_j}{\delta r} \Bigg |_{\boldsymbol{r}_i}
+,
+\mathcal{V}_{s,(i,j)} = \frac{\delta \psi_j}{\delta s} \Bigg |_{\boldsymbol{r}_i}
+,
+\mathcal{V}_{t,(i,j)} = \frac{\delta \psi_j}{\delta t} \Bigg |_{\boldsymbol{r}_i}
+\end{equation*}
+
+<p>
+The Vandermonde matrix establishes the connection between the modes, \(\hat{\boldsymbol{u}}\) and the nodal values, \(\boldsymbol{u}\).<br>
+</p>
+
+<div class="emphasis" id="orgb6825a1">
+<p>
+Interestingly enough, explicit calculations of the Lagrange polynomials (\(\ell_i^k\)) are not necessary. If you have the Vandermonde matrix and its inverse, you can switch between modal and nodal expansions without ever computing the Lagrange polynomials.<br>
+</p>
+
 </div>
 
+<p>
+Were going to use this to create the mass, stiffness, and differentiation matrices. To produce it all we need to do is use the equation \(\mathcal{V}_{ij} = \psi_j(\boldsymbol{r_i})\) and evaluate the orthogonal basis functions \(\psi_j\) in a for loop. page 450 - simplex3DP<br>
+</p>
+
+<p>
+We'll need a 3D Vandermonde matrix as well as a 2D Vandermonde matrix for each face. The following code will be included in our <code>referenceElementOperator</code> class<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">_build_vandermonde_3d</span>(<span style="color: #81A1C1;">self</span>, r, s, t):
+    <span style="color: #78808f;">""" create 3D vandermonde matrix"""</span>
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Initialize the 3D Vandermonde Matrix</span>
+    <span style="color: #D8DEE9;">V</span> = <span style="color: #81A1C1;">self</span>.vandermonde_3d
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get orthonormal basis</span>
+    <span style="color: #D8DEE9;">orthonormal_basis</span> = <span style="color: #81A1C1;">self</span>.finiteElement.eval_basis_function()
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get polynomial order of finite element</span>
+    <span style="color: #D8DEE9;">n</span> = <span style="color: #81A1C1;">self</span>.finiteElement.n 
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Build the Vandermonde matrix</span>
+    <span style="color: #D8DEE9;">column_index</span> = 0
+    <span style="color: #81A1C1;">for</span> i <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n + 1):
+        <span style="color: #81A1C1;">for</span> j <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n - i + 1):
+            <span style="color: #81A1C1;">for</span> k <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n - i - j + 1):
+                <span style="color: #D8DEE9;">V</span>[:, column_index] = orthonormal_basis(r, s, t, i, j, k)
+                <span style="color: #D8DEE9;">column_index</span> += 1
+    <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vandermonde_3d</span> = V
+
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">_build_vandermonde_2d</span>(r, s):
+    <span style="color: #78808f;">""" create 2D vandermonde matrix to evaluate flux at faces of each element"""</span>
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">initiate vandermonde matrix</span>
+    <span style="color: #D8DEE9;">V</span> = <span style="color: #81A1C1;">self</span>.vandermonde_2d
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get basis function</span>
+    <span style="color: #D8DEE9;">orthonormal_basis_2d</span> = <span style="color: #81A1C1;">self</span>.finiteElement.eval_basis_function_2d()
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get polynomial order of finite element</span>
+    <span style="color: #D8DEE9;">n</span> = <span style="color: #81A1C1;">self</span>.finiteElement.n 
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Build the Vandermonde matrix</span>
+    <span style="color: #D8DEE9;">column_index</span> = 0
+    <span style="color: #81A1C1;">for</span> i <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n+1):
+        <span style="color: #81A1C1;">for</span> j <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n - i + 1):
+            <span style="color: #D8DEE9;">v</span>[:, column_index] = orthonormal_basis_2d(r, s, i, j)
+            <span style="color: #D8DEE9;">column_index</span> += 1                                                      
+
+    <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vandermonde_2d</span> = V
+
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">grad_vandermonde_3d</span>(r, s, t):
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">initialize vandermonde derivative matrices</span>
+    <span style="color: #D8DEE9;">Vr</span> = <span style="color: #81A1C1;">self</span>.vandermonde_3d_r_derivative
+    <span style="color: #D8DEE9;">Vs</span> = <span style="color: #81A1C1;">self</span>.vandermonde_3d_s_derivative
+    <span style="color: #D8DEE9;">Vt</span> = <span style="color: #81A1C1;">self</span>.vandermonde_3d_t_derivative
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get basis function</span>
+    <span style="color: #D8DEE9;">eval_basis_function_3d_gradient</span> = <span style="color: #81A1C1;">self</span>.finiteElement.eval_basis_function_3d_gradient()
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">get polynomial order of finite element</span>
+    <span style="color: #D8DEE9;">n</span> = <span style="color: #81A1C1;">self</span>.finiteElement.n 
+
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Build vandermonde derivative matrices</span>
+    <span style="color: #D8DEE9;">column_index</span> = 0
+    <span style="color: #81A1C1;">for</span> i <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(n + 1):
+        <span style="color: #81A1C1;">for</span> j <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(N - i + 1):
+            <span style="color: #81A1C1;">for</span> k <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(N - i - j + 1):
+                <span style="color: #D8DEE9;">Vr</span>[:, <span style="color: #D8DEE9;">column_index</span>], <span style="color: #D8DEE9;">Vs</span>[:, column_index], <span style="color: #D8DEE9;">Vt</span>[:, column_index] = eval_basis_function_3d_gradient(r, s, t, i, j, k)
+                <span style="color: #D8DEE9;">column_index</span> += 1
+                
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">save result in the class</span>
+     <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vandermonde_3d_r_derivative</span> = Vr
+     <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vandermonde_3d_s_derivative</span> = Vs
+     <span style="color: #81A1C1;">self</span>.<span style="color: #D8DEE9;">vandermonde_3d_t_derivative</span> = Vt
+</pre>
+</div>
+
+<p>
+Where the <code>orthonormal_basis</code> functions are explained in the <a href="file:///blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">finite element article.</a><br>
+</p>
+
+<p>
+We'll also need the <b>gradient of the Vandermonde matrix</b> to compute the differentiation matrices. This is almost exactly the same as computing the Vandermonde matrix, just using the derivatives of the basis functions instead. Luckily we've already computed the <code>orthonormal_basis_gradient</code> in the <a href="file:///blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">finite element article.</a> <br>
+</p>
+</div>
+</div>
 <div id="outline-container-org9464ef2" class="outline-2">
 <h2 id="org9464ef2">Mass Matrix</h2>
-</div>
+<div class="outline-text-2" id="text-org9464ef2">
+\begin{equation*}
+\mathcal{M}_{ij}^k = \int_{\mathsf{D}^k} \ell_i^k(x) \ell_j^k(x) dx
+\end{equation*}
 
-<div id="outline-container-org060e38b" class="outline-2">
-<h2 id="org060e38b">Stiffness Matrix</h2>
-</div>
+\begin{equation*}
+\mathcal{M}^k = \frac{h^k}{2} (\mathcal{V}\mathcal{V}^T)^{-1}
+\end{equation*}
 
+<p>
+The mass matrix is made up of combinations of inner products of the basis functions (either the interpolating Lagrange functions, <i>nodal</i>, or the orthogonal basis functions, <i>modal</i>). The name comes from a similar matrix found in structural mechanics problems<br>
+</p>
+
+<p>
+This is simple enough to compute now that we have the Vandermonde matrix.<br>
+</p>
+
+<p>
+We'll also need a 2D version to calculate the flux across the faces. We can create this in the same way, just using the 2D Vandermonde matrix we made before.<br>
+</p>
+</div>
+</div>
 <div id="outline-container-org6820204" class="outline-2">
 <h2 id="org6820204">Differentiation Matrices</h2>
+<div class="outline-text-2" id="text-org6820204">
+\begin{equation*}
+\mathcal{D}_{r,(i,j)} = \frac{d \ell_j}{d r} \Bigg |_{r_{i}}, \quad \mathcal{D}_r = \mathcal{V}_r\mathcal{V}^{-1}
+\end{equation*}
 </div>
+</div>
+<div id="outline-container-org060e38b" class="outline-2">
+<h2 id="org060e38b">Stiffness Matrix</h2>
+<div class="outline-text-2" id="text-org060e38b">
+\begin{equation*}
+\mathcal{S}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \displaystyle\frac{d\ell_j^k}{dx} dx 
+\end{equation*}
 
+\begin{equation*}
+\mathcal{S} = \mathcal{M} \mathcal{D}_r
+\end{equation*}
+
+<p>
+The stiffness matrix, like the mass matrix, gets its name from structural mechanics.<br>
+</p>
+
+<p>
+Since we already have the mass and differentiation matrices. This is easy to compute.<br>
+</p>
+</div>
+</div>
 <div id="outline-container-org8dec1c0" class="outline-2">
 <h2 id="org8dec1c0">Lift Matrix</h2>
+<div class="outline-text-2" id="text-org8dec1c0">
+\begin{equation*}
+\mathcal{LIFT} = \mathcal{M}^{-1} \mathcal{E} 
+\end{equation*}
 </div>
-
+</div>
 <div id="outline-container-org826c412" class="outline-2">
 <h2 id="org826c412">The <code>ElementOperators</code> class in python</h2>
 </div>
@@ -196,6 +350,14 @@ These matrices are used to calculate normal vectors (even on curved elements), v
 <h2 id="orgd43647e">Conclusion</h2>
 </div>
 
+<div id="outline-container-org914b408" class="outline-2">
+<h2 id="org914b408">Code</h2>
+<div class="outline-text-2" id="text-org914b408">
+<p>
+All the above code can be found in the <a href="https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python">github repository.</a><br>
+</p>
+</div>
+</div>
 <div id="outline-container-orge11f92c" class="outline-2">
 <h2 id="orge11f92c">References</h2>
 <div class="outline-text-2" id="text-orge11f92c">

@@ -5,10 +5,21 @@
 :END:
 #+BEGIN_EXPORT html
 <ul class="blog-list">
+<li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-introduction.html">DG from scratch - Introduction</a></li>
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html">DG from scratch - The finite element</a></li>
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-gmsh.html">DG from scratch - The Mesh (from Gmsh to Numpy)</a></li>
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-reference-element-operators.html">DG from scratch - Reference element operators</a></li>
 <li><a class="blog-links" href="/blogs/discontinuous-galerkin-method-from-scratch-in-python-mapping-reference-to-physical.html">DG from scratch - Mapping from reference space to physical space</a></li>
+</ul>
+#+END_EXPORT
+
+** Machine Learning and AI 
+:PROPERTIES:
+:CUSTOM_ID:  blog-section
+:END:
+#+BEGIN_EXPORT html
+<ul class="blog-list">
+<li><a class="blog-links" href="/blogs/using-a-gaussian-process-as-a-surrogate-model-for-a-2d-problem.html">Using a Gaussian process as a surrogate model for a 2D problem</a></li>
 </ul>
 #+END_EXPORT
 

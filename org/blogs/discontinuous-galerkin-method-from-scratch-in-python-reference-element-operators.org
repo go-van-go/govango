@@ -1,28 +1,34 @@
 #+SETUPFILE: ./blog-styles.org
 #+TITLE: DG Method From Scratch (in Python) - Reference Element Operators 
-#+SUBTITLE: Calculating the stiffess, mass, differentiation, vandermonde, and lift matricies needed for our calculations
-#+HTML: <p class="date"><i>last update: Feb 9, 2025</i></p>
+#+SUBTITLE: Calculating the stiffess, mass, differentiation, vandermonde, and lift matricies needed for our simulation 
+#+HTML: <p class="date"><i>last update: Feb 13, 2025</i></p>
 
 * Article Motivation 
 #+BEGIN_QUOTE
 - What are reference element operators?
 - How do we calculate them?
-- Code it in python.
+- Create a ~referenceElementOperators~ class it in python.
 #+END_QUOTE
 
 * Introduction
-There are a few matrices that are common to many finite element problems. These include the *vandermonde matrix* $V$, *mass matrix* $M$, *stiffness matrix* $S$, *differentiation matrices* $D_r$, $D_s$, $D_t$, and the *lift matrix*, $L$.
+There are a few matrices that are common to many finite element problems. These include the *vandermonde matrix* $V$, *mass matrix* $M$, *stiffness matrix* $S$, *differentiation matrices* $D_r$, $D_s$, $D_t$.
 
-These are all *linear operators*. This is the same as saying they can be expressed as a matrix, or that they map a vector space to another vector space.
+The Discontinuous Galerkin method also uses the *lift matrix*, $L$ for calculating the fluxes as the faces of cells.
+
+These all operate only on the reference element, so we only need to make them one time and we can reuse them for every calculation.
+
+Reference element operators are all *linear operators*. This is the same as saying they can be expressed as a matrix. Or that they map a vector space to another vector space.
+
+In this article I'll use the following notation:
+
 #+BEGIN_emphasis
 *Key notation*
 - $u(x,t)$ - Global solution.
 - $u_h(x,t)$ - Approximate solution.
 - $u_h^k(x,t)$ - Local solution on cell $K$.
 - $\mathsf{D}^k$ - The domain of element $k$.
-- $r, s, t$ - coordinates in the reference tetrahedron
+- $(r, s, t)$ - coordinates in the reference tetrahedron
 - $(x,y,z)$ - physical coordinates in the mesh
-- 
 #+END_emphasis
 
 #+BEGIN_emphasis
@@ -30,7 +36,7 @@ These are all *linear operators*. This is the same as saying they can be express
 - $u_h^k(x,t) = \displaystyle\sum_{n=1}^{N_p} \hat{u}_h^k(t)\psi_n(x)$ - Modal expansion of local solution.
 - $\hat{\boldsymbol{u}}_h^k = [\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k]^T$ - Local modal solution vector. 
 - $\hat{u}_1^k, \ldots, \hat{u}_{N_p}^k$ - Expansions coefficients.
-- $\psi_n(x)$ - Local polynomial basis functions.
+- $\psi_n(x)$ - Local polynomial basis functions. Orthogonal on reference tetrahedron.
 - $\boldsymbol{\psi} = [\psi_1(x), \ldots, \psi_{N_p}(x)]^T$ - Vector of local test functions.
 - $\hat{\mathcal{M}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \psi_j dx$ - Local mass matrix in modal form
 - $\hat{\mathcal{S}}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\psi_i \displaystyle\frac{d\psi_j}{dx} dx$ - Local stiffness matrix in modal form
@@ -38,43 +44,170 @@ These are all *linear operators*. This is the same as saying they can be express
 
 #+BEGIN_emphasis
 *Nodal Expansion*
+The solution is represented by its values at these nodal points, and the Lagrange polynomials interpolate between them.
 - $u_h^k(x,t) = \displaystyle\sum_{i=1}^{N_p}u_h^k(x_i^k, t)\ell_i^k(x)$ - Nodal expansion of the local solution.
 - $x_i^k$ - Nodal points in element $K$.
 - $u_h^k(x_i^k, t)$ - solution value at the nodal points at time $t$.
 - $u_1^k, \ldots, u_{N_p}^k$ - Unknown nodal solution values.
 - $\boldsymbol{u}_h^k = [u_1^k, \ldots, u_{N_p}^k]^T$ - Local nodal solution vector.
-- $\ell_i^k(x)$ - Lagrange polynomials where $\ell_i(x_j) = \delta_{ij}$.
+- $\ell_i^k(x)$ - Interpolating Lagrange polynomials where $\ell_i(x_j) = \delta_{ij}$.
 - $\boldsymbol{\ell}(x)^k = [\ell(x)_1^k, \ldots, \ell(x)_{N_p}^k]^T$ - Vector of Lagrange polynomials
 - $\mathcal{M}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \ell_j^k dx$ - Local mass matrix in nodal form
 - $\mathcal{S}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \displaystyle\frac{d\ell_j^k}{dx} dx$  - Local stiffness matrix in nodal form
 
 #+END_emphasis
 
-The *Vandermonde matrix* $\mathcal{V}\hat{\boldsymbol{u}} = \boldsymbol{u}$ maps the nodal degrees of freedom(DOF) $\hat{u}$ to the coefficients of the expansion of the solution $u_h$.
+These matrices are used to calculate normal vectors (even on curved elements), volume and surface Jacobians (used for mapping from the reference element to the mesh) and for the calculations with the actual physics [cite:@hesthaven2008nodal].
 
-The *mass matrix* can map the nodal degrees of freedom (DOF) to their weighted inner product with the basis functions.
+Our goal is to code them all up in python and put them in a ~referenceElementsOperators~ class.
 
-The *stiffness matrix* can map the DOF to their weighted inner product with the basis derivatives. 
-
-The *differentiation matrices* can map the basis function values to their derivatives.
-
-The *lift matrix* can map the flux values on the faces to updates on the interior of the cell.
-
-These matrices are used to calculate normal vectors (even on curved elements), volume and surface Jacobians (used for mapping from the reference element to the mesh) and for the calculations with the actual physics [cite:@hesthaven2008nodal]. 
+We'll discuss each of them below.
 
 * Vandermonde matrix 
+\begin{equation*}
+\mathcal{V} \hat{\boldsymbol{u}} = \boldsymbol{u}, \quad \mathcal{V}_{ij} = \psi_j(\boldsymbol{r}_i)
+\end{equation*}
+
+\begin{equation*}
+\mathcal{V}_{r,(i,j)} = \frac{\delta \psi_j}{\delta r} \Bigg |_{\boldsymbol{r}_i}
+,
+\mathcal{V}_{s,(i,j)} = \frac{\delta \psi_j}{\delta s} \Bigg |_{\boldsymbol{r}_i}
+,
+\mathcal{V}_{t,(i,j)} = \frac{\delta \psi_j}{\delta t} \Bigg |_{\boldsymbol{r}_i}
+\end{equation*}
+
+The Vandermonde matrix establishes the connection between the modes, $\hat{\boldsymbol{u}}$ and the nodal values, $\boldsymbol{u}$.
+
+#+BEGIN_emphasis
+Interestingly enough, explicit calculations of the Lagrange polynomials ($\ell_i^k$) are not necessary. If you have the Vandermonde matrix and its inverse, you can switch between modal and nodal expansions without ever computing the Lagrange polynomials.
+#+END_emphasis
+
+Were going to use this to create the mass, stiffness, and differentiation matrices. To produce it all we need to do is use the equation $\mathcal{V}_{ij} = \psi_j(\boldsymbol{r_i})$ and evaluate the orthogonal basis functions $\psi_j$ in a for loop. page 450 - simplex3DP 
+
+We'll need a 3D Vandermonde matrix as well as a 2D Vandermonde matrix for each face. The following code will be included in our ~referenceElementOperator~ class
+
+#+BEGIN_SRC python
+def _build_vandermonde_3d(self, r, s, t):
+    """ create 3D vandermonde matrix"""
+
+    # Initialize the 3D Vandermonde Matrix
+    V = self.vandermonde_3d
+    # get orthonormal basis
+    orthonormal_basis = self.finiteElement.eval_basis_function()
+    # get polynomial order of finite element
+    n = self.finiteElement.n 
+    
+    # Build the Vandermonde matrix
+    column_index = 0
+    for i in range(n + 1):
+        for j in range(n - i + 1):
+            for k in range(n - i - j + 1):
+                V[:, column_index] = orthonormal_basis(r, s, t, i, j, k)
+                column_index += 1
+    self.vandermonde_3d = V
+
+
+def _build_vandermonde_2d(r, s):
+    """ create 2D vandermonde matrix to evaluate flux at faces of each element"""
+    
+    # initiate vandermonde matrix
+    V = self.vandermonde_2d
+    
+    # get basis function
+    orthonormal_basis_2d = self.finiteElement.eval_basis_function_2d()
+
+    # get polynomial order of finite element
+    n = self.finiteElement.n 
+
+    # Build the Vandermonde matrix
+    column_index = 0
+    for i in range(n+1):
+        for j in range(n - i + 1):
+            v[:, column_index] = orthonormal_basis_2d(r, s, i, j)
+            column_index += 1                                                      
+
+    self.vandermonde_2d = V
+
+
+def grad_vandermonde_3d(r, s, t):
+    # initialize vandermonde derivative matrices
+    Vr = self.vandermonde_3d_r_derivative
+    Vs = self.vandermonde_3d_s_derivative
+    Vt = self.vandermonde_3d_t_derivative
+    
+    # get basis function
+    eval_basis_function_3d_gradient = self.finiteElement.eval_basis_function_3d_gradient()
+
+    # get polynomial order of finite element
+    n = self.finiteElement.n 
+
+    # Build vandermonde derivative matrices
+    column_index = 0
+    for i in range(n + 1):
+        for j in range(N - i + 1):
+            for k in range(N - i - j + 1):
+                Vr[:, column_index], Vs[:, column_index], Vt[:, column_index] = eval_basis_function_3d_gradient(r, s, t, i, j, k)
+                column_index += 1
+                
+    # save result in the class
+     self.vandermonde_3d_r_derivative = Vr
+     self.vandermonde_3d_s_derivative = Vs
+     self.vandermonde_3d_t_derivative = Vt
+#+END_SRC
+
+Where the ~orthonormal_basis~ functions are explained in the [[/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html][finite element article.]]
+
+We'll also need the *gradient of the Vandermonde matrix* to compute the differentiation matrices. This is almost exactly the same as computing the Vandermonde matrix, just using the derivatives of the basis functions instead. Luckily we've already computed the ~orthonormal_basis_gradient~ in the [[/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element.html][finite element article.]] 
+
+
 
 * Mass Matrix
+\begin{equation*}
+\mathcal{M}_{ij}^k = \int_{\mathsf{D}^k} \ell_i^k(x) \ell_j^k(x) dx
+\end{equation*}
 
-* Stiffness Matrix
+\begin{equation*}
+\mathcal{M}^k = \frac{h^k}{2} (\mathcal{V}\mathcal{V}^T)^{-1}
+\end{equation*}
+
+The mass matrix is made up of combinations of inner products of the basis functions (either the interpolating Lagrange functions, /nodal/, or the orthogonal basis functions, /modal/). The name comes from a similar matrix found in structural mechanics problems
+
+This is simple enough to compute now that we have the Vandermonde matrix.
+
+We'll also need a 2D version to calculate the flux across the faces. We can create this in the same way, just using the 2D Vandermonde matrix we made before.
 
 * Differentiation Matrices
+\begin{equation*}
+\mathcal{D}_{r,(i,j)} = \frac{d \ell_j}{d r} \Bigg |_{r_{i}}, \quad \mathcal{D}_r = \mathcal{V}_r\mathcal{V}^{-1}
+\end{equation*}
+
+
+
+* Stiffness Matrix
+\begin{equation*}
+\mathcal{S}_{ij}^k = \displaystyle\int_{\mathsf{D}^k}\ell_i^k \displaystyle\frac{d\ell_j^k}{dx} dx 
+\end{equation*}
+
+\begin{equation*}
+\mathcal{S} = \mathcal{M} \mathcal{D}_r
+\end{equation*}
+
+The stiffness matrix, like the mass matrix, gets its name from structural mechanics.
+
+Since we already have the mass and differentiation matrices. This is easy to compute.
 
 * Lift Matrix
+\begin{equation*}
+\mathcal{LIFT} = \mathcal{M}^{-1} \mathcal{E} 
+\end{equation*}
+
 
 * The ~ElementOperators~ class in python
 
 * Conclusion
+
+* Code
+All the above code can be found in the [[https://github.com/go-van-go/govango-code/tree/main/finite-elements-from-scratch-in-python][github repository.]]
 
 * References
 #+print_bibliography:

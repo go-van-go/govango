@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-03-02 Sun 17:07 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Using a Gaussian process as a surrogate model for a 2D function</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
+<script type="module" src="../assets/js/navbar.js"></script>
+<script type="module" src="../assets/js/main.js"></script>
+<base target="_blank">
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<nav>
+    <!-- Checkbox for toggling menu -->
+    <input type="checkbox" id="check">
+    <!-- Menu icon -->
+    <label for="check" class="checkbtn">
+      <i class="fas fa-bars"></i>
+    </label>
+    <!-- Site logo -->
+    <label class="logo"><a href="/index.html">Go Van Go</a></label>
+    <!-- Navigation links -->
+    <ul class="navbar-ul">
+      <li><a target="_self" class="active" href="/index.html">Home</a></li>
+      <li><a target="_self" href="/about.html">About</a></li>
+      <li><a target="_self" href="/blog.html">Blog</a></li>
+      <li><a target="_self" href="/contact.html">Contact</a></li>
+    </ul>
+  </nav>
+</div>
+<div id="content" class="content">
+<h1 class="title">Using a Gaussian process as a surrogate model for a 2D function
+<br>
+<span class="subtitle">And coding it up in Python with GPyTorch</span>
+</h1>
+<p class="date"><i>last update: Feb 18, 2025</i></p>
+<div id="outline-container-orgc7822ed" class="outline-2">
+<h2 id="orgc7822ed">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgc7822ed">
+<blockquote>
+<ul class="org-ul">
+<li>What is a Gaussian process?<br></li>
+<li>What are the pros and cons with respect to neural networks?<br></li>
+<li>How can it be used as a surrogate model?<br></li>
+<li>Code it up in python using <code>GPyTorch</code><br></li>
+</ul>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-org49f6e31" class="outline-2">
+<h2 id="org49f6e31">Introduction</h2>
+<div class="outline-text-2" id="text-org49f6e31">
+<p>
+Gaussian processes (GPs) are an often overlooked machine learning technique .<br>
+</p>
+
+<p>
+GPs are helpful when we are given some finite amount of training data, \(\mathcal{D} = {(\mathbf{x}_i, y_i) | i = 1, \dots, n}\) where \(\mathbf{x}_i\) are the \(n\) input vectors, and \(y_i\) are the corresponding output observations, and we need to find a function, \(f\) that can predict a \(y\) value for all possible input values.<br>
+</p>
+
+<p>
+GPs are non-parametric, meaning (unlike linear regression for example), we are not trying to fit a fixed number of parameters (namely slope and intercept in linear regression) to the data.<br>
+</p>
+
+<p>
+Instead, we end up with a most likely \(y_i\) for any \(x_i\), and a confidence interval for this guess. This is expressed mean and covariance matrix which is what our GP model will eventually return [<a href="#citeproc_bib_item_1">1</a>].<br>
+</p>
+
+<p>
+A mean and covariance function completely specify a particular Gaussian process.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org87868bf" class="outline-2">
+<h2 id="org87868bf">Key Notation</h2>
+<div class="outline-text-2" id="text-org87868bf">
+<div class="emphasis" id="orga496b0d">
+<ul class="org-ul">
+<li>\(\mathbf{x}\) - input<br></li>
+<li>\(y\) - output<br></li>
+<li>\(X\) - test data. Points where we want to predict the function values.<br></li>
+<li>\(Y\) - training data. Points where we know the output.<br></li>
+<li>\(P_{X,Y}\) - joint distribution. Spans the space of possible functions values for the function we want to predict.<br></li>
+<li>\(P_{X|Y}\) - posterior distribution<br></li>
+<li>\(\mathcal{N}(\mu, \sigma^2)\) - <b>Gaussian (normal) distribution</b> where \(\mu\) is the mean and \(\sigma^2\) is the variance (making \(\sigma\) the standard deviation.<br></li>
+<li>\(\mathcal{N}(\mu, \Sigma)\) - <b>Multivariate Gaussian distribution</b> where \(\mu\) is the mean vector and \(\Sigma\) is the covariance matrix which models the variance along each dimension.<br></li>
+<li>\(\epsilon \sim \mathcal{N}(0, \sigma^2_n)\) - Gaussian <b>noise</b> where \(\sigma_n^2\) is the noise variance<br></li>
+<li>\(E[X] = \displaystyle\sum_{i=1}^{\infty}x_i p_i = \displaystyle\int_{-\infty}^{\infty}xf(x)dx\) - <b>expected value</b>, a generalization of the weighted average.<br></li>
+<li>\(m(\mathbf{x}) = E[f(\mathbf{x})]\) - <b>mean function</b> for the GP.<br></li>
+<li>\(k(\mathbf{x}, \mathbf{x}') = E[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]\) - <b>covariance function</b> (also called <b>kernel</b>)for the GP.<br></li>
+<li>\(\Sigma(X,X')\) - <b>covariance matrix</b>, models the variance along each dimensions and determines how random variables are correlated. Always symmetric and positive semi-definite.<br></li>
+<li>\(\mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))\) - <b>Gaussian process</b><br></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org70619d2" class="outline-2">
+<h2 id="org70619d2">Bayesian statistics</h2>
+<div class="outline-text-2" id="text-org70619d2">
+\begin{equation*}
+P(\mathbf{y} | X) = \frac{P(X | \mathbf{y}) P(\mathbf{y})}{P(X)} 
+\end{equation*}
+<p>
+The above equation is called <i>Bayes's theorem.</i><br>
+</p>
+
+<p>
+\(P(\mathbf{y})\) is called the <b>prior probability</b> of \(\mathbf{y}\).<br>
+</p>
+
+<p>
+\(P(X | \mathbf{y})\) is called the <b>likelihood function</b>, pronounced <i>probability of \(X\) given \(\mathbf{y}\) is true</i>.<br>
+</p>
+
+<p>
+\(P(\mathbf{y} | X)\) is the <b>posterior probability</b>, pronounced <i>probability of \(\mathbf{y}\) given \(X\) is true</i>.<br>
+</p>
+
+<div class="extra" id="orgf2a981c">
+<p>
+<i>"Bayes runs counter to the deeply held conviction that modern science requires objectivity and precision. Bayes is a measure of belief. And it says that we can learn even from missing and inadequate data, from approximations, and from ignorance."</i> [<a href="#citeproc_bib_item_2">2</a>]<br>
+</p>
+
+</div>
+
+<p>
+Bayesian probability revolves around the idea of specifying a prior probability and updating it into a posterior probability using data. This is the idea of <i>Bayesian inference</i>.<br>
+</p>
+
+<p>
+Gaussian process leverage this idea and allow us make predictions about our data by incorporating prior knowledge [<a href="#citeproc_bib_item_3">3</a>]<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgffd649e" class="outline-2">
+<h2 id="orgffd649e">Marginalization</h2>
+<div class="outline-text-2" id="text-orgffd649e">
+<p>
+With respect to multivariate Gaussian distributions, marginalization is the process of isolating the Gaussian distribution of a subset of the original multivariate distribution.<br>
+</p>
+
+<p>
+For example, if we have a probability distribution that contains two subsets, \(X\), and \(Y\), we can write the <b>joint probability distribution</b>, \(P_{X,Y}\) as follows.<br>
+</p>
+
+\begin{equation*}
+P_{X,Y} = \begin{bmatrix} X \\ Y \end{bmatrix} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) = \mathcal{N}\left( \begin{bmatrix} \mu_X \\ \mu_Y \end{bmatrix}, \begin{bmatrix} \Sigma_{XX} & \Sigma_{XY} \\ \Sigma_{YX} & \Sigma_{YY} \end{bmatrix} \right)
+\end{equation*}
+
+<p>
+Marginalizing out \(Y\) from this joint probability distribution would give the probability distribution of \(X\) as follows<br>
+</p>
+\begin{equation*}
+X \sim \mathcal{N}(\mu_{X}, \Sigma_{XX})
+\end{equation*}
+
+<p>
+Where \(~\) here means <i>is distributed as</i>, so we can pronounce the above equation as /"the random variable X is distributed as a normal (Gaussian) distribution with mean \(\mu_{X}\) and covariance matrix \(\Sigma_{XX}\).<br>
+</p>
+
+<p>
+Why do we want to isolate out certain subsets of the multivariate Gaussian distribution? This is needed in order to train our GP in a process known as <b>Conditioning</b>.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org1f67c37" class="outline-2">
+<h2 id="org1f67c37">Conditioning</h2>
+<div class="outline-text-2" id="text-org1f67c37">
+<p>
+Condition is the operation of updating a probability distribution based on knowledge of another random variable.<br>
+</p>
+
+\begin{equation*}
+P(X|Y) = \frac{P(X,Y)}{P(X)} 
+\end{equation*}
+
+<p>
+if \(X\) is our test data, and \(Y\) is our training data, conditioning allows us to determine how \(X\) depends on \(Y\).<br>
+</p>
+
+<p>
+Conditioning is what allows us to derive the posterior distribution. It forces the set of possible functions to pass through each training point in \(Y\).<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgcf95ee8" class="outline-2">
+<h2 id="orgcf95ee8">Prior distribution</h2>
+<div class="outline-text-2" id="text-orgcf95ee8">
+<p>
+The prior distribution is the same as the "untrained" distribution, meaning it hasn't seen any of the training data yet. It is expressed as multivariate Guassian distribution (\(\mathcal{N}(\mu, \Sigma)\) with the dimension \(N\), where \(N\) is the number of data points in our training data.<br>
+</p>
+
+<p>
+Generally we assume \(\mu = 0\) for simplicity. We can easily shift this later if needed.<br>
+</p>
+
+<p>
+The choice of a <b>prior distribution</b> is important because it determines the types of functions that we will consider in our training of the GP model [<a href="#citeproc_bib_item_4">4</a>].<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org2ed1d00" class="outline-2">
+<h2 id="org2ed1d00">Covariance matrix</h2>
+<div class="outline-text-2" id="text-org2ed1d00">
+\begin{equation*}
+K(X,X)
+\end{equation*}
+
+<p>
+The covariance matrix models the variance along each dimensions and determines how random variables are correlated. This is used to find out which type of functions, from the space of all possible functions, are more likely to produce our given data set.<br>
+</p>
+
+<p>
+Its always symmetric and positive semi-definite.<br>
+</p>
+
+<p>
+The diagonal consists of the variance \(\sigma_i^2\) of the random variable \(i\). The off-diagonal elements, \(\sigma_{ij}\) describe the correlation between the variables \(i\) and \(j\) [<a href="#citeproc_bib_item_3">3</a>]<br>
+</p>
+
+<p>
+In Gaussian processes we treat each data point from the training set as a random variable. This means that our multivariate Gaussian distribution has the same number of dimensions as there are data points in our training set.<br>
+</p>
+
+<p>
+Making a prediction using a GP is done by drawing samples from this distribution.<br>
+</p>
+
+<p>
+The covariance matrix determines the characteristics of the function that we want to predict.<br>
+</p>
+
+<p>
+How do we find it?<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org63e4fe3" class="outline-2">
+<h2 id="org63e4fe3">Covariance function (kernel)</h2>
+<div class="outline-text-2" id="text-org63e4fe3">
+\begin{equation*}
+k(\mathbf{x}, \mathbf{x}') = E[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]
+\end{equation*}
+
+<p>
+The covariance function, \(k\), (also called the <i>kernel</i>) determines the covariance matrix \(\mathcal{K}\). We evaluate this function for each pair of test points in our training data. The function \(k\) takes these two points(\(x\), \(x'\)), and returns a single scalar value that represents a similarity measure. For example, \(k(x_i, x_j)\) becomes the value \(\Sigma_{ij}\) of the covariance matrix.<br>
+</p>
+
+<p>
+What does \(\Sigma_{ij}\) tell us? The covariance between the data points \(x_i\) and \(x_j\). In other words it gives us a statistical measure of the relationship between these two random variables.<br>
+</p>
+
+<p>
+This means that we must <i>choose some form of the covariance function</i>. Common choices include <b>radial basis function</b> (<b>RBF</b> also called <b>squared exponential kernel</b>), <b>periodic</b>, <b>linear</b>, and <b>matern</b>.<br>
+</p>
+
+<p>
+We can also combine kernels by multiplying them or adding them together.<br>
+</p>
+
+<p>
+The choice of this function is extremely important and should be guided by your understanding of the particular problem. Exploring how to pick a kernel is explained more in this <a href="https://www.cs.toronto.edu/~duvenaud/cookbook/">blog post by David Duvenaud</a> (which later became a chapter of his PhD thesis)[<a href="#citeproc_bib_item_5">5</a>].<br>
+</p>
+
+<p>
+Some common ones include:<br>
+</p>
+<ul class="org-ul">
+<li>Squared Exponential (Radial Basis Function RBF)<br></li>
+</ul>
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{\|x - x'\|^2}{2l^2}\right)
+\end{equation*}
+
+<ul class="org-ul">
+<li>Matern Kernel<br></li>
+</ul>
+\begin{equation*}
+k(x, x') = \sigma^2 \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{\sqrt{2\nu} \|x - x'\|}{l}\right)^\nu K_\nu \left(\frac{\sqrt{2\nu} \|x - x'\|}{l}\right)
+\end{equation*}
+
+<ul class="org-ul">
+<li>Exponential Kernel<br></li>
+</ul>
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{\|x - x'\|}{l}\right)
+\end{equation*}
+
+<ul class="org-ul">
+<li>Periodic Kernel<br></li>
+</ul>
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{2 \sin^2(\pi \|x - x'\| / p)}{l^2}\right)
+\end{equation*}
+
+<ul class="org-ul">
+<li>Linear Kernel<br></li>
+</ul>
+\begin{equation*}
+k(x, x') = \sigma^2 (x \cdot x' + c)
+\end{equation*}
+
+<p>
+You can see from the above equations that each one contains certain hyperparameters that we can tune. The most common are variance \(\sigma^2\), and length-scale \(l\), but other exist too. Essentially, <b>we introduce hyperparameters into our equations</b>, so we can tune them to increase the effectiveness of our kernel.<br>
+</p>
+
+<p>
+In our case we are trying to model a damped harmonic oscillator. It makes sense to have our kernel be a combination of a periodic kernel and a exponential decay kernel.<br>
+</p>
+
+<p>
+We can code it up as follows<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">decaying_periodic_kernel</span>(x1, x2, length_scale=1.0, period=1.0, decay=1.0):
+    <span style="color: #78808f;">"""</span>
+<span style="color: #78808f;">    Computes the covariance between two inputs using a kernel that is a</span>
+<span style="color: #78808f;">    combination of a periodic kernel and a exponential decay kernel. </span>
+<span style="color: #78808f;">    """</span>
+    <span style="color: #D8DEE9;">diff</span> = np.<span style="color: #81A1C1;">abs</span>(x1 - x2)
+    <span style="color: #D8DEE9;">periodic_component</span> = np.exp(-2 * (np.sin(np.pi * diff / <span style="color: #81A1C1;">self</span>.period) ** 2) / <span style="color: #81A1C1;">self</span>.length_scale**2)
+    <span style="color: #D8DEE9;">decay_component</span> = np.exp(-<span style="color: #81A1C1;">self</span>.decay * diff)
+    <span style="color: #81A1C1;">return</span> <span style="color: #81A1C1;">self</span>.sigma_f**2 * periodic_component * decay_component
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc21b2c9" class="outline-2">
+<h2 id="orgc21b2c9">Posterior Distribution \(P_{X|Y}\)</h2>
+<div class="outline-text-2" id="text-orgc21b2c9">
+<p>
+Obtaining the posterior distribution is a main goal of our GP. To do this, we'll use the idea of <i>Bayesian inference</i> from before. We need to <i>observe the training data</i> and use Baye's theorem to update our prior distribution based on the new knowledge.<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orge4c3f16" class="outline-2">
+<h2 id="orge4c3f16">Generating Data</h2>
+<div class="outline-text-2" id="text-orge4c3f16">
+<p>
+Since we're considering such a simple model (damped harmonic oscillator), we are lucky enough to have an analytical solution to this problem.<br>
+</p>
+
+\begin{equation*}
+y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
+\end{equation*}
+
+<p>
+Using this we can construct a <code>python</code> function that samples from the above function, and adds Gaussian noise to simulate a real data set<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">generate_damped_oscillator_data</span>(m, k, c, t_min, t_max, num_samples, noise_std=0.0, random_seed=<span style="color: #81A1C1;">None</span>):
+    <span style="color: #78808f;">"""</span>
+<span style="color: #78808f;">    Generates synthetic data from the analytic solution of a damped harmonic oscillator.</span>
+
+<span style="color: #78808f;">    Args:</span>
+<span style="color: #78808f;">        m (float): Mass of the oscillator.</span>
+<span style="color: #78808f;">        k (float): Spring constant.</span>
+<span style="color: #78808f;">        c (float): Damping coefficient.</span>
+<span style="color: #78808f;">        t_min (float): Start time.</span>
+<span style="color: #78808f;">        t_max (float): End time.</span>
+<span style="color: #78808f;">        num_samples (int): Number of sampled points.</span>
+<span style="color: #78808f;">        noise_std (float): Standard deviation of Gaussian noise (0 for noiseless data).</span>
+<span style="color: #78808f;">        random_seed (int, optional): Seed for reproducibility.</span>
+
+<span style="color: #78808f;">    Returns:</span>
+<span style="color: #78808f;">        X (numpy array): Sampled time points.</span>
+<span style="color: #78808f;">        y (numpy array): Function values (with noise if specified).</span>
+<span style="color: #78808f;">    """</span>
+    <span style="color: #81A1C1;">if</span> random_seed <span style="color: #81A1C1;">is</span> <span style="color: #81A1C1;">not</span> <span style="color: #81A1C1;">None</span>:
+        np.random.seed(random_seed)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Create a dense time grid for the exact solution</span>
+    <span style="color: #D8DEE9;">t_dense</span> = np.linspace(t_min, t_max, 1000)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Compute the analytic solution (assuming underdamping: c^2 &lt; 4mk)</span>
+    <span style="color: #D8DEE9;">omega</span> = np.sqrt(4 * m * k - c**2) / (2 * m)
+    <span style="color: #D8DEE9;">y_true</span> = 2 * np.exp(-c * t_dense / (2 * m)) * np.cos(omega * t_dense)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Randomly select time samples</span>
+    <span style="color: #D8DEE9;">time_samples</span> = np.sort(np.random.choice(<span style="color: #81A1C1;">len</span>(t_dense), num_samples, replace=<span style="color: #81A1C1;">False</span>))
+    <span style="color: #D8DEE9;">X</span> = t_dense[time_samples]
+    <span style="color: #D8DEE9;">y</span> = y_true[time_samples]
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Add Gaussian noise if noise_std &gt; 0</span>
+    <span style="color: #81A1C1;">if</span> noise_std &gt; 0:
+        <span style="color: #D8DEE9;">y</span> += noise_std * np.random.randn(num_samples)
+    
+    <span style="color: #81A1C1;">return</span> X, y
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org8f03049" class="outline-2">
+<h2 id="org8f03049">Training a model</h2>
+<div class="outline-text-2" id="text-org8f03049">
+<p>
+The process of training a GP model is the process of finding the covariance properties between the input parameters [<a href="#citeproc_bib_item_4">4</a>]. Its the process of discovering how much \(x_i\) varies for each \(x_j\) and collecting that information into the <b>covariance matrix</b>. Once we have the covariance matrix, our training is done.<br>
+</p>
+
+<p>
+(eq<br>
+</p>
+\begin{equation*}
+K(X_*,X_*) - K(X_*,X)K(X,X)^{-1}K(X_,X_*)
+\end{equation*}
+
+<p>
+(eq 2.38)<br>
+</p>
+\begin{equation*}
+\mu = K(X,X_*) K(X,X)^{-1} y
+\end{equation*}
+</div>
+</div>
+<div id="outline-container-org78a2e9b" class="outline-2">
+<h2 id="org78a2e9b">References</h2>
+<div class="outline-text-2" id="text-org78a2e9b">
+<style>.csl-left-margin{float: left; padding-right: 0em;}
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Gardner JR, Pleiss G, Bindel D, Weinberger KQ, Wilson AG. <a href="https://docs.gpytorch.ai/en/latest/">Gpytorch: Blackbox matrix-matrix gaussian process inference with gpu acceleration</a>. In: Advances in neural information processing systems. 2018. Available from Gpytorch: Blackbox matrix-matrix gaussian process inference with gpu acceleration.</div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_2"></a>
+    <div class="csl-left-margin">2. </div><div class="csl-right-inline">McGrayne SB. The theory that would not die: how bayes’ rule cracked the enigma code, hunted down russian submarines, &#38; emerged triumphant from two centuries of controversy. 1st ed. Yale University Press; 2011. </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_3"></a>
+    <div class="csl-left-margin">3. </div><div class="csl-right-inline">Görtler J, Kehlbeck R, Deussen O. <a href="https://doi.org/10.23915/distill.00017">A visual exploration of gaussian processes</a>. Distill. 2019; </div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_4"></a>
+    <div class="csl-left-margin">4. </div><div class="csl-right-inline">Rasmussen CE, Williams CKI. <a href="https://doi.org/https://doi.org/10.7551/mitpress/3206.001.0001">Gaussian processes for machine learning</a>. The MIT Press; 2005. (Adaptive computation and machine learning). Available from Gaussian processes for machine learning.</div>
+  </div>
+  <div class="csl-entry"><a id="citeproc_bib_item_5"></a>
+    <div class="csl-left-margin">5. </div><div class="csl-right-inline">Duvenaud D. <a href="https://doi.org/10.17863/CAM.14087">Automatic model construction with gaussian processes</a>. Apollo - University of Cambridge Repository; 2014. Available from Automatic model construction with gaussian processes.</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer>
+   <p>Go Van Go!</p>
+   <a href="https://github.com/go-van-go" target="_blank" rel="noopener noreferrer">
+     <i class="fa-brands fa-github githubfooter"></i>
+   </a>
+</footer>
+</div>
+</body>
+</html>

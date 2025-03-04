@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-03-02 Sun 17:07 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DG Method From Scratch (in Python) - An Introduction</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../assets/css/styles.css" />
+<script type="module" src="../assets/js/navbar.js"></script>
+<script type="module" src="../assets/js/main.js"></script>
+<base target="_blank">
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+<nav>
+    <!-- Checkbox for toggling menu -->
+    <input type="checkbox" id="check">
+    <!-- Menu icon -->
+    <label for="check" class="checkbtn">
+      <i class="fas fa-bars"></i>
+    </label>
+    <!-- Site logo -->
+    <label class="logo"><a href="/index.html">Go Van Go</a></label>
+    <!-- Navigation links -->
+    <ul class="navbar-ul">
+      <li><a target="_self" class="active" href="/index.html">Home</a></li>
+      <li><a target="_self" href="/about.html">About</a></li>
+      <li><a target="_self" href="/blog.html">Blog</a></li>
+      <li><a target="_self" href="/contact.html">Contact</a></li>
+    </ul>
+  </nav>
+</div>
+<div id="content" class="content">
+<h1 class="title">DG Method From Scratch (in Python) - An Introduction
+<br>
+<span class="subtitle">Understanding the overall program architecture, math notation, and data structures</span>
+</h1>
+<p class="date"><i>last update: Mar 2, 2025</i></p>
+<div id="outline-container-orgec83cd6" class="outline-2">
+<h2 id="orgec83cd6">Article Motivation</h2>
+<div class="outline-text-2" id="text-orgec83cd6">
+<blockquote>
+<ul class="org-ul">
+<li>Outline the structure of this series of articles.<br></li>
+<li>Understand the discontinuous Galerkin method.<br></li>
+<li>List the mathematical notation used.<br></li>
+<li>Show examples of data structures used in the algorithm.<br></li>
+</ul>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgd83e322" class="outline-2">
+<h2 id="orgd83e322">Introduction</h2>
+</div>
+
+<div id="outline-container-org1a873ae" class="outline-2">
+<h2 id="org1a873ae">Examples of data structures on a simple mesh</h2>
+<div class="outline-text-2" id="text-org1a873ae">
+<p>
+For reference, below are some examples of the matrix data structures used in the algorithm developed in this series of articles.<br>
+</p>
+
+<p>
+Some fields, like <code>p</code>, the pressure, are defined over all nodes in the simulation, including on the faces of elements, and in the interior of elements.<br>
+</p>
+
+<p>
+Other fields, like <code>dp</code>, the jump in pressure across a face, are defined only over face nodes.<br>
+</p>
+
+<p>
+All the matrices below are based on the simple five element tetrahedral mesh of a cubic domain.<br>
+</p>
+
+<p>
+That means <code>number_of_cells</code> = 5, <code>nodes_per_cell</code> = 10, <code>nodes_per_face</code> = \(\frac{(n+1)(n+2)}{2} =\) 6, <code>faces_per_cell</code> = 4.<br>
+</p>
+</div>
+<div id="outline-container-org6a03d3f" class="outline-3">
+<h3 id="org6a03d3f"><code>cell_to_vertices(number_of_cells, faces_per_cell)</code></h3>
+<div class="outline-text-3" id="text-org6a03d3f">
+<ul class="org-ul">
+<li><code>cell_to_vertices[i,j]</code> - the global vertex number of the <i>ith</i> vertex of the <i>jth</i> cell<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([[0, 1, 3, 4],
+       [1, 2, 3, 6],
+       [1, 6, 4, 5],
+       [3, 4, 6, 7],
+       [1, 6, 3, 4]])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf142b09" class="outline-3">
+<h3 id="orgf142b09"><code>cell_to_cells(number_of_cells, faces_per_cell)</code></h3>
+<div class="outline-text-3" id="text-orgf142b09">
+<ul class="org-ul">
+<li><code>cell_to_cell[i,j]</code> - the global cell number of the cell that touches the <i>jth</i> face of cell <i>i</i>.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([[0, 0, 4, 0],
+       [1, 1, 1, 4],
+       [4, 2, 2, 2],
+       [4, 3, 3, 3],
+       [1, 2, 3, 0]])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org3da7aec" class="outline-3">
+<h3 id="org3da7aec"><code>cell_to_faces(number_of_cells, faces_per_cell)</code></h3>
+<div class="outline-text-3" id="text-org3da7aec">
+<ul class="org-ul">
+<li><code>cell_to_face[i,j]</code> - the local face number of the cell that touches cell <i>i</i> on it's <i>jth</i> face.<br></li>
+<li>This can be used together with <code>cell_to_cell</code> to identify which faces of which cells are adjacent.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([[0, 1, 3, 3],
+       [0, 1, 2, 0],
+       [1, 1, 2, 3],
+       [2, 1, 2, 3],
+       [3, 0, 0, 2]])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org02e9fe8" class="outline-3">
+<h3 id="org02e9fe8"><code>node_ids(nodes_per_cell, number_of_cells)</code></h3>
+<div class="outline-text-3" id="text-org02e9fe8">
+<ul class="org-ul">
+<li><code>node_ids[i,j]</code> is the <i>global node id number</i> of the <i>ith</i> node on the <i>jth</i> mesh cell.<br></li>
+<li>provides a global reference for the id numbers of every cell on the mesh.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">np.array([[ 0, 10, 20, 30, 40],
+          [ 1, 11, 21, 31, 41],
+          [ 2, 12, 22, 32, 42],
+          [ 3, 13, 23, 33, 43],
+          [ 4, 14, 24, 34, 44],
+          [ 5, 15, 25, 35, 45],
+          [ 6, 16, 26, 36, 46],
+          [ 7, 17, 27, 37, 47],
+          [ 8, 18, 28, 38, 48],
+          [ 9, 19, 29, 39, 49]])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb5d32a2" class="outline-3">
+<h3 id="orgb5d32a2"><code>interior_face_node_indices(nodes_per_face * number_of_cells)</code></h3>
+<div class="outline-text-3" id="text-orgb5d32a2">
+<ul class="org-ul">
+<li>Called <code>vmapM</code> by Hesthaven and warburton [<a href="#citeproc_bib_item_1">1</a>].<br></li>
+<li>Provides the indices for the nodes on the interior side of a face of a particular cell. Can be used to index all interior face nodes to create fields defined only over face nodes.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([ 0,  3,  5,  6,  8,  9,  0,  1,  2,  6,  7,  9,  2,  4,  5,  7,  8,
+        9,  0,  1,  2,  3,  4,  5, 10, 13, 15, 16, 18, 19, 10, 11, 12, 16,
+       17, 19, 12, 14, 15, 17, 18, 19, 10, 11, 12, 13, 14, 15, 20, 23, 25,
+       26, 28, 29, 20, 21, 22, 26, 27, 29, 22, 24, 25, 27, 28, 29, 20, 21,
+       22, 23, 24, 25, 30, 33, 35, 36, 38, 39, 30, 31, 32, 36, 37, 39, 32,
+       34, 35, 37, 38, 39, 30, 31, 32, 33, 34, 35, 40, 43, 45, 46, 48, 49,
+       40, 41, 42, 46, 47, 49, 42, 44, 45, 47, 48, 49, 40, 41, 42, 43, 44,
+       45])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org4815614" class="outline-3">
+<h3 id="org4815614"><code>exterior_face_node_indices(nodes_per_face * number_of_cells)</code></h3>
+<div class="outline-text-3" id="text-org4815614">
+<ul class="org-ul">
+<li>Called <code>vmapP</code> by Hesthaven and warburton [<a href="#citeproc_bib_item_1">1</a>].<br></li>
+<li>Provides the indices for the nodes on the exterior side of a face of a particular cell. Can be used to index all exterior face nodes to create fields defined only over exterior face nodes.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([ 0,  3,  5,  6,  8,  9,  0,  1,  2,  6,  7,  9, 42, 44, 45, 41, 43,
+       40,  0,  1,  2,  3,  4,  5, 10, 13, 15, 16, 18, 19, 10, 11, 12, 16,
+       17, 19, 12, 14, 15, 17, 18, 19, 40, 46, 49, 43, 48, 45, 40, 41, 42,
+       46, 47, 49, 20, 21, 22, 26, 27, 29, 22, 24, 25, 27, 28, 29, 20, 21,
+       22, 23, 24, 25, 45, 48, 49, 44, 47, 42, 30, 31, 32, 36, 37, 39, 32,
+       34, 35, 37, 38, 39, 30, 31, 32, 33, 34, 35, 10, 13, 15, 11, 14, 12,
+       20, 23, 25, 26, 28, 29, 39, 36, 30, 38, 33, 35,  9,  7,  2,  8,  4,
+        5])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org44c3d78" class="outline-3">
+<h3 id="org44c3d78"><code>boundary_face_node_indices(number_of_nodes_on_boundary)</code></h3>
+<div class="outline-text-3" id="text-org44c3d78">
+<ul class="org-ul">
+<li>Called <code>vmapB</code> by Hesthaven and Warburton [<a href="#citeproc_bib_item_1">1</a>].<br></li>
+<li>Use to index boundary nodes on a field defined only on face nodes (like <code>dp</code>, the jump in pressure across face nodes)<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 18, 19, 20, 21, 22,
+       23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+       40, 41, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68,
+       69, 70, 71, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
+       92, 93, 94, 95])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org87fd588" class="outline-3">
+<h3 id="org87fd588"><code>boundary_node_indices(number_of_nodes_on_boundary)</code></h3>
+<div class="outline-text-3" id="text-org87fd588">
+<ul class="org-ul">
+<li>Called <code>mapB</code> by Hesthaven and Warburton [<a href="#citeproc_bib_item_1">1</a>].<br></li>
+<li>Use to index boundary nodes on a field defined on all nodes.<br></li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python">array([ 0,  3,  5,  6,  8,  9,  0,  1,  2,  6,  7,  9,  0,  1,  2,  3,  4,
+        5, 10, 13, 15, 16, 18, 19, 10, 11, 12, 16, 17, 19, 12, 14, 15, 17,
+       18, 19, 20, 21, 22, 26, 27, 29, 22, 24, 25, 27, 28, 29, 20, 21, 22,
+       23, 24, 25, 30, 31, 32, 36, 37, 39, 32, 34, 35, 37, 38, 39, 30, 31,
+       32, 33, 34, 35])
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org94f57a2" class="outline-3">
+<h3 id="org94f57a2"><code>r_differentiation_marix(number_of_nodes, number_of_nodes)</code></h3>
+<div class="outline-text-3" id="text-org94f57a2">
+<ul class="org-ul">
+<li>Differentiate with respect to r on the <a href="https://www.govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-the-finite-element">reference tetrahedron</a>.<br></li>
+<li>For example, if <code>u</code> is defined over all node (i.e. with size <code>(number_of_nodes, number_of_cells)</code>) and you do matrix multiplication, <code>r_differentiation_matrix @ u</code>, you will get the <i>derivative of u with respect to r</i>.<br></li>
+<li>In order to turn this into a derivative in the physical space <b>you must multiply the result by the appropriate metric constant for the mapping from reference space to physical space</b>, \(\frac{\partial r}{\partial x}\), named <code>drdx</code>.<br></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgf044d2a" class="outline-3">
+<h3 id="orgf044d2a"><code>lift_matrix(number_of_nodes, faces_per_cell * nodes_per_face)</code></h3>
+<div class="outline-text-3" id="text-orgf044d2a">
+<ul class="org-ul">
+<li>Operator that mimics the extraction of a surface integral like this:<br></li>
+</ul>
+\begin{equation*}
+\mathcal{E} [\boldsymbol{g^1},\boldsymbol{g^2},\boldsymbol{g^3},\boldsymbol{g^4}]^T = \int_{\partial \mathsf{I}} \mathbf{\hat{n}} \cdot \boldsymbol{g}_h \ell_i(\boldsymbol{r}) d \boldsymbol{r} 
+\end{equation*}
+<ul class="org-ul">
+<li>Here \([\boldsymbol{g^1},\boldsymbol{g^2},\boldsymbol{g^3},\boldsymbol{g^4}]^T\) is a matrix of size <code>(points_per_cell, number_of_cells)</code> where each row represents all the nodal and each column represents an element.<br></li>
+<li>By multiplying the lift matrix, \(\mathcal{E}\) by a matrix defined by a field over all face nodes, we can compute the surface integral of that term.<br></li>
+<li>In the code we'll define the lift matrix as  \(\mathcal{M^{-1}}\mathcal{E}\). This just simplifies things because the inverse of the mass matrix always turns up in the surface integral calculations.<br></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org5052b2c" class="outline-2">
+<h2 id="org5052b2c">Conclusion</h2>
+</div>
+
+<div id="outline-container-org68c8014" class="outline-2">
+<h2 id="org68c8014">References</h2>
+<div class="outline-text-2" id="text-org68c8014">
+<style>.csl-left-margin{float: left; padding-right: 0em;}
+ .csl-right-inline{margin: 0 0 0 1em;}</style><div class="csl-bib-body">
+  <div class="csl-entry"><a id="citeproc_bib_item_1"></a>
+    <div class="csl-left-margin">1. </div><div class="csl-right-inline">Hesthaven JS, Warburton T. <a href="https://doi.org/10.1007/978-0-387-72067-8">Nodal discontinuous galerkin methods: Algorithms, analysis, and applications</a>. 1st ed. Springer New York, NY; 2008. (Texts in applied mathematics; vol. 54). </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer>
+   <p>Go Van Go!</p>
+   <a href="https://github.com/go-van-go" target="_blank" rel="noopener noreferrer">
+     <i class="fa-brands fa-github githubfooter"></i>
+   </a>
+</footer>
+</div>
+</body>
+</html>

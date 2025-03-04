@@ -78,7 +78,7 @@ h1 {
 .title {
   margin-bottom: 0;
   text-align: center;
-  line-height: 0.8em;
+  line-height: 0.9em;
 }
 .subtitle {
   width:100%;
@@ -87,6 +87,7 @@ h1 {
   font-weight: 200;
   font-size: 0.5em;
   border-bottom: solid 1px var(--nord-13);
+  line-height: 0.5em;
 }
 
 .date {
@@ -99,7 +100,7 @@ h2 {
   font-size: 1.66em;
   color: var(--nord-6);
   padding-top: 1em;
-  border-bottom: solid 2px var(--nord-13);
+  border-bottom: solid 1px var(--nord-13);
 }
 
 h3 {
@@ -107,6 +108,7 @@ h3 {
   font-size: 1.33em;
   color: var(--nord-15);
   padding-top: 1em;
+  padding-bottom: 2px;
   border-bottom: solid 1px var(--nord-3);
 }
 
@@ -198,7 +200,7 @@ blockquote ul li {
  * *******************************************************/
 .extra {
   width:100%;
-  font-size: 0.9em;
+  font-size: 1.2em;
   margin:30px auto 20px auto;
   padding:0em 20px 1.6em 0;
   border-left:8px solid var(--nord-15) ;
@@ -502,7 +504,6 @@ footer {
  * *******************************************************/
 @media (max-width: 1050px) {
   blockquote {
-    width: 90%;
     margin:20px auto;
     padding: 1em 10px 1em 0;
     }

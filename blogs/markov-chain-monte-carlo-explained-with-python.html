@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-12 Wed 15:48 -->
+<!-- 2025-03-02 Sun 17:07 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Markov chain Monte Carlo explained with Python</title>
@@ -105,7 +105,7 @@ MCMC is a broad family of sampling algorithms used to sample a probability distr
 This MH algorithm is the specific instance of MCMC that were going to focus on in this post. We will consider a simple example, code it up in python, and visualize it using <code>matplotlib</code>.<br>
 </p>
 
-<div class="emphasis" id="org7ce45c6">
+<div class="emphasis" id="org2bec812">
 <p>
 <b>Example Problem</b><br>
 </p>
@@ -182,7 +182,7 @@ Finally we'll set up the time stepping  parameters.<br>
 <div id="outline-container-org6f689d8" class="outline-2">
 <h2 id="org6f689d8">Creating synthetic data</h2>
 <div class="outline-text-2" id="text-org6f689d8">
-<div class="extra" id="org73646b3">
+<div class="extra" id="org147559d">
 <p>
 Exact solutions to interesting problems are rare. In the physical world there is noise and uncertainty so we are forced to treat problems as statistical in nature.<br>
 </p>
@@ -192,6 +192,7 @@ Exact solutions to interesting problems are rare. In the physical world there is
 <p>
 We'll create some synthetic data for our problem. In this simple problem we know the analytical solution of a damped harmonic oscillator.<br>
 </p>
+
 
 \begin{equation*}
 y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
@@ -232,7 +233,7 @@ We need a simulation of the damped harmonic oscillator. This means we will need 
 </p>
 
 <p>
-This will predict the next <i>half time step value</i> using the previous values. Then use the midpoint \(y\) to update \(y_dot\) and the midpoint \(y_dot\) to update \(y\).<br>
+This will predict the next <i>half time step value</i> using the previous values. Then use the midpoint \(y\) to update \(y_{dot}\) and the midpoint \(y_{dot}\) to update \(y\).<br>
 </p>
 
 <div class="org-src-container">
@@ -277,7 +278,7 @@ Here our model is simple, but in a real world MCMC problem our model could be a 
 There are a lot of definitions of the MH algorithm that might differ slightly in their notation. Here is a simple explanation.<br>
 </p>
 
-<div class="emphasis" id="org3808871">
+<div class="emphasis" id="org9067d0a">
 <p>
 <b>Steps in the Metropolis-Hastings algorithm</b><br>
 </p>

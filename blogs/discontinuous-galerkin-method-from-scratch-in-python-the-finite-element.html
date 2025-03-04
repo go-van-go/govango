@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-02-12 Wed 15:48 -->
+<!-- 2025-03-02 Sun 17:07 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - The Finite Element</title>
@@ -73,7 +73,7 @@
 <p class="date"><i>last update: Feb 3, 2025</i></p>
 
 <div id="org89a045a" class="figure">
-<p><img src="../../public/reference-tetrahedron.png" alt="Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron" class="blog-image"><br>
+<p><img src="../../public/reference-tetrahedron-biunit.png" alt="Geometry of a reference tetrahedron for a 3D Lagrange element defined on a tetrahedron" class="blog-image"><br>
 </p>
 <p><span class="figure-number">Figure 1: </span>Geometry of a <b>reference tetrahedron</b> for a 3D Lagrange element.</p>
 </div>
@@ -105,7 +105,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org11ea8c5">
+<div class="emphasis" id="org8b9901c">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -121,7 +121,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org4e46e34">
+<div class="extra" id="org8164d58">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -196,7 +196,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="org03b1eb4">
+<div class="emphasis" id="org7cdfffe">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -300,6 +300,76 @@ This creates the <code>tetrahedra_nodes.npz</code> file that I can quickly load 
 </p>
 </div>
 </div>
+<div id="outline-container-orgb93f041" class="outline-2">
+<h2 id="orgb93f041">Creating the basis functions</h2>
+<div class="outline-text-2" id="text-orgb93f041">
+<p>
+We have our reference tetrahedron and set of nodal points with good interpolation properties. Now we need to define basis functions on the reference tetrahedron.<br>
+</p>
+
+<p>
+These need to be orthonormal basis functions on the reference tetrahedron, or else our scheme will be numerically unstable (specifically the <a href="https://govango.org/blogs/discontinuous-galerkin-method-from-scratch-in-python-reference-element-operators">Vandermonde matrix</a> will be unstable).<br>
+</p>
+
+<p>
+As explained in chapter 10 of Hesthaven and Warburton's book (see [<a href="#citeproc_bib_item_5">5</a>]) if we start with a standard polynomial basis and we orthonormalize it using the <i>Gram Schmidt method</i>. This gives us a set of polynomials we can evaluate at any point. The Gram Schmidt process produces a lengthy polynomial, so we'll simplify it by introducing points \((a,b,c)\) that are functions of \((r,s,t)\) the nodal points on our reference tetrahedron. We'll also need to normalize the <code>eval_jacobi</code> function from scipy, since scipy can't do this for us.<br>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #81A1C1;">import</span> numpy <span style="color: #81A1C1;">as</span> np
+<span style="color: #81A1C1;">from</span> scipy.special <span style="color: #81A1C1;">import</span> eval_jacobi, gamma
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">normalized_jacobi</span>(x, n, alpha, beta):
+    <span style="color: #78808f;">"""</span>
+<span style="color: #78808f;">    Compute the normalized Jacobi polynomial of degree n at points x.</span>
+<span style="color: #78808f;">    """</span>
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Compute the unnormalized Jacobi polynomial using scipy</span>
+    <span style="color: #D8DEE9;">P_n</span> = eval_jacobi(n, alpha, beta, x)
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Compute the normalization constant gamma_n</span>
+    <span style="color: #D8DEE9;">numerator</span> = 2 ** (alpha + beta + 1) * gamma(n + alpha + 1) * gamma(n + beta + 1)
+    <span style="color: #D8DEE9;">denominator</span> = (2 * n + alpha + beta + 1) * gamma(n + alpha + beta + 1) * gamma(n + 1)
+    <span style="color: #D8DEE9;">gamma_n</span> = numerator / denominator
+    
+    <span style="color: #6f7787;"># </span><span style="color: #6f7787;">Normalize the polynomial</span>
+    <span style="color: #D8DEE9;">P_n_normalized</span> = P_n / np.sqrt(gamma_n)
+    
+    <span style="color: #81A1C1;">return</span> P_n_normalized
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">orthonormal_polynomial3d</span>(a, b, c, i, j, k):
+    <span style="color: #D8DEE9;">h1</span> = normalized_jacobi_p(a, 0, 0, i)
+    <span style="color: #D8DEE9;">h2</span> = normalized_jacobi_p(b, 2*i+1, 0, j)
+    <span style="color: #D8DEE9;">h3</span> = normalized_jacobi_p(c, 2*(i+j)+2, 0, k)
+
+    <span style="color: #D8DEE9;">P</span> = 2 * np.sqrt(2) * h1 * h2 * ((1 - b) ** i) * h3 * ((1 - c) ** (i + j))
+    <span style="color: #81A1C1;">return</span> P
+
+<span style="color: #81A1C1;">def</span> <span style="color: #88C0D0;">rst_to_abc</span>(r, s, t):
+    <span style="color: #78808f;">""" transfer from (r,s,t) coordinates to (a,b,c) which are used to evaluate the</span>
+<span style="color: #78808f;">    jacobi polynomials in our orthonormal basis """</span>
+    <span style="color: #D8DEE9;">Np</span> = <span style="color: #81A1C1;">len</span>(r)
+    <span style="color: #D8DEE9;">a</span> = np.zeros(Np)
+    <span style="color: #D8DEE9;">b</span> = np.zeros(Np)
+    <span style="color: #D8DEE9;">c</span> = np.zeros(Np)
+
+    <span style="color: #81A1C1;">for</span> n <span style="color: #81A1C1;">in</span> <span style="color: #81A1C1;">range</span>(Np):
+        <span style="color: #81A1C1;">if</span> s[n] + t[n] != 0:
+            <span style="color: #D8DEE9;">a</span>[n] = 2 * (1 + r[n]) / (-s[n] - t[n]) - 1
+        <span style="color: #81A1C1;">else</span>:
+            <span style="color: #D8DEE9;">a</span>[n] = -1
+
+        <span style="color: #81A1C1;">if</span> t[n] != 1:
+            <span style="color: #D8DEE9;">b</span>[n] = 2 * (1 + s[n]) / (1 - t[n]) - 1
+        <span style="color: #81A1C1;">else</span>:
+            <span style="color: #D8DEE9;">b</span>[n] = -1
+
+        <span style="color: #D8DEE9;">c</span>[n] = t[n]
+
+    <span style="color: #81A1C1;">return</span> a, b, c
+</pre>
+</div>
+</div>
+</div>
 <div id="outline-container-org62f7412" class="outline-2">
 <h2 id="org62f7412">Python Code</h2>
 <div class="outline-text-2" id="text-org62f7412">
@@ -311,7 +381,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="orgbe618af">
+<div class="emphasis" id="org383dced">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>

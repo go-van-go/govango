@@ -82,6 +82,7 @@ Exact solutions to interesting problems are rare. In the physical world there is
 
 We'll create some synthetic data for our problem. In this simple problem we know the analytical solution of a damped harmonic oscillator.
 
+
 \begin{equation*}
 y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
 \end{equation*}
@@ -110,7 +111,7 @@ Now ~y_synthetic~ contains a noisy sample of the displacement of the mass at 50 
 * Damped harmonic oscillator simulation
 We need a simulation of the damped harmonic oscillator. This means we will need a ODE solver. Instead of trying to make the best ODE solver ever, we'll just use a simple mid point solver.
 
-This will predict the next /half time step value/ using the previous values. Then use the midpoint $y$ to update $y_dot$ and the midpoint $y_dot$ to update $y$.
+This will predict the next /half time step value/ using the previous values. Then use the midpoint $y$ to update $y_{dot}$ and the midpoint $y_{dot}$ to update $y$.
 
 #+BEGIN_SRC python
 def damped_oscillator_solver(m, k, c, y_initial, y_dot_initial, dt, num_t_steps):

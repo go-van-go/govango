@@ -1,0 +1,253 @@
+#+SETUPFILE: ./blog-styles.org
+#+TITLE: Using a Gaussian process as a surrogate model for a 2D function
+#+SUBTITLE: And coding it up in Python with GPyTorch
+#+HTML: <p class="date"><i>last update: Feb 18, 2025</i></p>
+
+
+* Article Motivation
+#+BEGIN_QUOTE
+- What is a Gaussian process?
+- What are the pros and cons with respect to neural networks?
+- How can it be used as a surrogate model?
+- Code it up in python using ~GPyTorch~
+#+END_QUOTE
+
+* Introduction
+Gaussian processes (GPs) are an often overlooked machine learning technique .
+
+GPs are helpful when we are given some finite amount of training data, $\mathcal{D} = {(\mathbf{x}_i, y_i) | i = 1, \dots, n}$ where $\mathbf{x}_i$ are the $n$ input vectors, and $y_i$ are the corresponding output observations, and we need to find a function, $f$ that can predict a $y$ value for all possible input values.
+
+GPs are non-parametric, meaning (unlike linear regression for example), we are not trying to fit a fixed number of parameters (namely slope and intercept in linear regression) to the data.
+
+Instead, we end up with a most likely $y_i$ for any $x_i$, and a confidence interval for this guess. This is expressed mean and covariance matrix which is what our GP model will eventually return [cite:@gardner2018gpytorch].
+
+A mean and covariance function completely specify a particular Gaussian process.
+
+* Key Notation
+#+BEGIN_emphasis
+- $\mathbf{x}$ - input
+- $y$ - output
+- $X$ - test data. Points where we want to predict the function values.
+- $Y$ - training data. Points where we know the output.
+- $P_{X,Y}$ - joint distribution. Spans the space of possible functions values for the function we want to predict. 
+- $P_{X|Y}$ - posterior distribution 
+- $\mathcal{N}(\mu, \sigma^2)$ - *Gaussian (normal) distribution* where $\mu$ is the mean and $\sigma^2$ is the variance (making $\sigma$ the standard deviation.
+- $\mathcal{N}(\mu, \Sigma)$ - *Multivariate Gaussian distribution* where $\mu$ is the mean vector and $\Sigma$ is the covariance matrix which models the variance along each dimension.
+- $\epsilon \sim \mathcal{N}(0, \sigma^2_n)$ - Gaussian *noise* where $\sigma_n^2$ is the noise variance
+- $E[X] = \displaystyle\sum_{i=1}^{\infty}x_i p_i = \displaystyle\int_{-\infty}^{\infty}xf(x)dx$ - *expected value*, a generalization of the weighted average.
+- $m(\mathbf{x}) = E[f(\mathbf{x})]$ - *mean function* for the GP.
+- $k(\mathbf{x}, \mathbf{x}') = E[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]$ - *covariance function* (also called *kernel*)for the GP.
+- $\Sigma(X,X')$ - *covariance matrix*, models the variance along each dimensions and determines how random variables are correlated. Always symmetric and positive semi-definite.
+- $\mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))$ - *Gaussian process*
+#+END_emphasis
+
+* Bayesian statistics
+\begin{equation*}
+P(\mathbf{y} | X) = \frac{P(X | \mathbf{y}) P(\mathbf{y})}{P(X)} 
+\end{equation*}
+The above equation is called /Bayes's theorem./
+
+$P(\mathbf{y})$ is called the *prior probability* of $\mathbf{y}$. 
+
+$P(X | \mathbf{y})$ is called the *likelihood function*, pronounced /probability of $X$ given $\mathbf{y}$ is true/.
+
+$P(\mathbf{y} | X)$ is the *posterior probability*, pronounced /probability of $\mathbf{y}$ given $X$ is true/.
+
+#+BEGIN_extra
+ /"Bayes runs counter to the deeply held conviction that modern science requires objectivity and precision. Bayes is a measure of belief. And it says that we can learn even from missing and inadequate data, from approximations, and from ignorance."/ [cite:@mcgrayne2011theory]
+#+END_extra
+
+Bayesian probability revolves around the idea of specifying a prior probability and updating it into a posterior probability using data. This is the idea of /Bayesian inference/.
+
+Gaussian process leverage this idea and allow us make predictions about our data by incorporating prior knowledge [cite:@gortler2019visual]
+
+* Marginalization
+With respect to multivariate Gaussian distributions, marginalization is the process of isolating the Gaussian distribution of a subset of the original multivariate distribution.
+
+For example, if we have a probability distribution that contains two subsets, $X$, and $Y$, we can write the *joint probability distribution*, $P_{X,Y}$ as follows.
+
+\begin{equation*}
+P_{X,Y} = \begin{bmatrix} X \\ Y \end{bmatrix} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) = \mathcal{N}\left( \begin{bmatrix} \mu_X \\ \mu_Y \end{bmatrix}, \begin{bmatrix} \Sigma_{XX} & \Sigma_{XY} \\ \Sigma_{YX} & \Sigma_{YY} \end{bmatrix} \right)
+\end{equation*}
+
+Marginalizing out $Y$ from this joint probability distribution would give the probability distribution of $X$ as follows
+\begin{equation*}
+X \sim \mathcal{N}(\mu_{X}, \Sigma_{XX})
+\end{equation*}
+
+Where $~$ here means /is distributed as/, so we can pronounce the above equation as /"the random variable X is distributed as a normal (Gaussian) distribution with mean $\mu_{X}$ and covariance matrix $\Sigma_{XX}$.
+
+Why do we want to isolate out certain subsets of the multivariate Gaussian distribution? This is needed in order to train our GP in a process known as *Conditioning*.
+
+* Conditioning
+Condition is the operation of updating a probability distribution based on knowledge of another random variable.
+
+\begin{equation*}
+P(X|Y) = \frac{P(X,Y)}{P(X)} 
+\end{equation*}
+
+if $X$ is our test data, and $Y$ is our training data, conditioning allows us to determine how $X$ depends on $Y$.
+
+Conditioning is what allows us to derive the posterior distribution. It forces the set of possible functions to pass through each training point in $Y$.
+
+* Prior distribution
+The prior distribution is the same as the "untrained" distribution, meaning it hasn't seen any of the training data yet. It is expressed as multivariate Guassian distribution ($\mathcal{N}(\mu, \Sigma)$ with the dimension $N$, where $N$ is the number of data points in our training data.
+
+Generally we assume $\mu = 0$ for simplicity. We can easily shift this later if needed.
+
+The choice of a *prior distribution* is important because it determines the types of functions that we will consider in our training of the GP model [cite:@rasmussen2005gaussian].
+
+* Covariance matrix
+\begin{equation*}
+K(X,X)
+\end{equation*}
+
+The covariance matrix models the variance along each dimensions and determines how random variables are correlated. This is used to find out which type of functions, from the space of all possible functions, are more likely to produce our given data set.
+
+Its always symmetric and positive semi-definite.
+
+The diagonal consists of the variance $\sigma_i^2$ of the random variable $i$. The off-diagonal elements, $\sigma_{ij}$ describe the correlation between the variables $i$ and $j$ [cite:@gortler2019visual]
+
+In Gaussian processes we treat each data point from the training set as a random variable. This means that our multivariate Gaussian distribution has the same number of dimensions as there are data points in our training set.
+
+Making a prediction using a GP is done by drawing samples from this distribution.
+
+The covariance matrix determines the characteristics of the function that we want to predict.
+
+How do we find it?
+
+* Covariance function (kernel)
+\begin{equation*}
+k(\mathbf{x}, \mathbf{x}') = E[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]
+\end{equation*}
+
+The covariance function, $k$, (also called the /kernel/) determines the covariance matrix $\mathcal{K}$. We evaluate this function for each pair of test points in our training data. The function $k$ takes these two points($x$, $x'$), and returns a single scalar value that represents a similarity measure. For example, $k(x_i, x_j)$ becomes the value $\Sigma_{ij}$ of the covariance matrix.
+
+What does $\Sigma_{ij}$ tell us? The covariance between the data points $x_i$ and $x_j$. In other words it gives us a statistical measure of the relationship between these two random variables.
+
+This means that we must /choose some form of the covariance function/. Common choices include *radial basis function* (*RBF* also called *squared exponential kernel*), *periodic*, *linear*, and *matern*.
+
+We can also combine kernels by multiplying them or adding them together.
+
+The choice of this function is extremely important and should be guided by your understanding of the particular problem. Exploring how to pick a kernel is explained more in this [[https://www.cs.toronto.edu/~duvenaud/cookbook/][blog post by David Duvenaud]] (which later became a chapter of his PhD thesis)[cite:@duvenaud2014automatic].
+
+Some common ones include:
+- Squared Exponential (Radial Basis Function RBF)
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{\|x - x'\|^2}{2l^2}\right)
+\end{equation*}
+
+- Matern Kernel
+\begin{equation*}
+k(x, x') = \sigma^2 \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{\sqrt{2\nu} \|x - x'\|}{l}\right)^\nu K_\nu \left(\frac{\sqrt{2\nu} \|x - x'\|}{l}\right)
+\end{equation*}
+
+- Exponential Kernel
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{\|x - x'\|}{l}\right)
+\end{equation*}
+
+- Periodic Kernel 
+\begin{equation*}
+k(x, x') = \sigma^2 \exp\left(-\frac{2 \sin^2(\pi \|x - x'\| / p)}{l^2}\right)
+\end{equation*}
+
+- Linear Kernel
+\begin{equation*}
+k(x, x') = \sigma^2 (x \cdot x' + c)
+\end{equation*}
+
+You can see from the above equations that each one contains certain hyperparameters that we can tune. The most common are variance $\sigma^2$, and length-scale $l$, but other exist too. Essentially, *we introduce hyperparameters into our equations*, so we can tune them to increase the effectiveness of our kernel. 
+
+In our case we are trying to model a damped harmonic oscillator. It makes sense to have our kernel be a combination of a periodic kernel and a exponential decay kernel.
+
+We can code it up as follows
+
+#+BEGIN_SRC python
+import numpy as np
+
+def decaying_periodic_kernel(x1, x2, length_scale=1.0, period=1.0, decay=1.0):
+    """
+    Computes the covariance between two inputs using a kernel that is a
+    combination of a periodic kernel and a exponential decay kernel. 
+    """
+    diff = np.abs(x1 - x2)
+    periodic_component = np.exp(-2 * (np.sin(np.pi * diff / self.period) ** 2) / self.length_scale**2)
+    decay_component = np.exp(-self.decay * diff)
+    return self.sigma_f**2 * periodic_component * decay_component
+
+#+END_SRC
+
+* Posterior Distribution $P_{X|Y}$
+Obtaining the posterior distribution is a main goal of our GP. To do this, we'll use the idea of /Bayesian inference/ from before. We need to /observe the training data/ and use Baye's theorem to update our prior distribution based on the new knowledge.
+
+* Generating Data
+Since we're considering such a simple model (damped harmonic oscillator), we are lucky enough to have an analytical solution to this problem.
+
+\begin{equation*}
+y_{\text{exact}} = 2 e^{ct/2m} \cos\left(\frac{t \sqrt{4mk - c^2}}{2m} \right)
+\end{equation*}
+
+Using this we can construct a ~python~ function that samples from the above function, and adds Gaussian noise to simulate a real data set
+
+#+BEGIN_SRC python
+import numpy as np
+
+def generate_damped_oscillator_data(m, k, c, t_min, t_max, num_samples, noise_std=0.0, random_seed=None):
+    """
+    Generates synthetic data from the analytic solution of a damped harmonic oscillator.
+
+    Args:
+        m (float): Mass of the oscillator.
+        k (float): Spring constant.
+        c (float): Damping coefficient.
+        t_min (float): Start time.
+        t_max (float): End time.
+        num_samples (int): Number of sampled points.
+        noise_std (float): Standard deviation of Gaussian noise (0 for noiseless data).
+        random_seed (int, optional): Seed for reproducibility.
+
+    Returns:
+        X (numpy array): Sampled time points.
+        y (numpy array): Function values (with noise if specified).
+    """
+    if random_seed is not None:
+        np.random.seed(random_seed)
+    
+    # Create a dense time grid for the exact solution
+    t_dense = np.linspace(t_min, t_max, 1000)
+    
+    # Compute the analytic solution (assuming underdamping: c^2 < 4mk)
+    omega = np.sqrt(4 * m * k - c**2) / (2 * m)
+    y_true = 2 * np.exp(-c * t_dense / (2 * m)) * np.cos(omega * t_dense)
+    
+    # Randomly select time samples
+    time_samples = np.sort(np.random.choice(len(t_dense), num_samples, replace=False))
+    X = t_dense[time_samples]
+    y = y_true[time_samples]
+    
+    # Add Gaussian noise if noise_std > 0
+    if noise_std > 0:
+        y += noise_std * np.random.randn(num_samples)
+    
+    return X, y
+
+#+END_SRC
+
+
+* Training a model
+The process of training a GP model is the process of finding the covariance properties between the input parameters [cite:@rasmussen2005gaussian]. Its the process of discovering how much $x_i$ varies for each $x_j$ and collecting that information into the *covariance matrix*. Once we have the covariance matrix, our training is done.
+
+(eq
+\begin{equation*}
+K(X_*,X_*) - K(X_*,X)K(X,X)^{-1}K(X_,X_*)
+\end{equation*}
+
+(eq 2.38)
+\begin{equation*}
+\mu = K(X,X_*) K(X,X)^{-1} y
+\end{equation*}
+
+
+* References
+#+print_bibliography:
