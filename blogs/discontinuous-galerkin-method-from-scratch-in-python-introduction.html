@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-03-02 Sun 17:07 -->
+<!-- 2025-03-05 Wed 12:13 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - An Introduction</title>
@@ -87,7 +87,46 @@
 <div id="outline-container-orgd83e322" class="outline-2">
 <h2 id="orgd83e322">Introduction</h2>
 </div>
+<div id="outline-container-orgd3c55bc" class="outline-2">
+<h2 id="orgd3c55bc">Hyperbolic PDEs</h2>
+<div class="outline-text-2" id="text-orgd3c55bc">
+<ul class="org-ul">
+<li>1D hyperbolic system<br></li>
+</ul>
+\begin{equation*}
 
+\end{equation*}
+
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} + \mathcal{A} \frac{\partial \mathbf{u}}{\partial x}  = 0
+\end{equation*}
+
+<p>
+Where \(\mathcal{A}\) is diagonalizable.<br>
+</p>
+
+<ul class="org-ul">
+<li>2D hyperbolic system<br></li>
+</ul>
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} + \mathcal{A}_x \frac{\partial \mathbf{u}}{\partial x} +  \mathcal{A}_y \frac{\partial \mathbf{u}}{\partial y}  = 0
+\end{equation*}
+
+<ul class="org-ul">
+<li>scalar conservation law in 1D<br></li>
+</ul>
+\begin{equation*}
+\frac{\partial u}{\partial t} + \frac{\partial f(u)}{\partial x} = 0
+\end{equation*}
+
+<ul class="org-ul">
+<li>3D conservation law<br></li>
+</ul>
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} = \nabla \cdot F(\mathbf{u}) = \frac{\partial F(\mathbf{u})}{\partial x} + \frac{\partial F(\mathbf{u})}{\partial y} + \frac{\partial F(\mathbf{u})}{\partial z} 
+\end{equation*}
+</div>
+</div>
 <div id="outline-container-org1a873ae" class="outline-2">
 <h2 id="org1a873ae">Examples of data structures on a simple mesh</h2>
 <div class="outline-text-2" id="text-org1a873ae">
@@ -132,6 +171,7 @@ That means <code>number_of_cells</code> = 5, <code>nodes_per_cell</code> = 10, <
 <div class="outline-text-3" id="text-orgf142b09">
 <ul class="org-ul">
 <li><code>cell_to_cell[i,j]</code> - the global cell number of the cell that touches the <i>jth</i> face of cell <i>i</i>.<br></li>
+<li>If I have a <code>cell</code> and a <code>face</code> of that cell, then I can find the adjacent cell like this, <code>adjacent_cell = cell_to_cell[cell, face]</code><br></li>
 </ul>
 <div class="org-src-container">
 <pre class="src src-python">array([[0, 0, 4, 0],
@@ -148,6 +188,7 @@ That means <code>number_of_cells</code> = 5, <code>nodes_per_cell</code> = 10, <
 <div class="outline-text-3" id="text-org3da7aec">
 <ul class="org-ul">
 <li><code>cell_to_face[i,j]</code> - the local face number of the cell that touches cell <i>i</i> on it's <i>jth</i> face.<br></li>
+<li>If I have a <code>cell</code> and a <code>face</code> of that cell, then I can find the corresponding face of the adjacent cell like this, <code>adjacent_face = cell_to_face[cell, face]</code><br></li>
 <li>This can be used together with <code>cell_to_cell</code> to identify which faces of which cells are adjacent.<br></li>
 </ul>
 <div class="org-src-container">
@@ -279,6 +320,8 @@ That means <code>number_of_cells</code> = 5, <code>nodes_per_cell</code> = 10, <
 <li>Here \([\boldsymbol{g^1},\boldsymbol{g^2},\boldsymbol{g^3},\boldsymbol{g^4}]^T\) is a matrix of size <code>(points_per_cell, number_of_cells)</code> where each row represents all the nodal and each column represents an element.<br></li>
 <li>By multiplying the lift matrix, \(\mathcal{E}\) by a matrix defined by a field over all face nodes, we can compute the surface integral of that term.<br></li>
 <li>In the code we'll define the lift matrix as  \(\mathcal{M^{-1}}\mathcal{E}\). This just simplifies things because the inverse of the mass matrix always turns up in the surface integral calculations.<br></li>
+<li>The lift matrix is formed by first initializing a matrix of the correct size with all zeros. Then finding the mass matrix for each face of the reference tetrahedron, and inserting those elements into the corresponding face nodes of the lift matrix.<br></li>
+<li>On page 187 of Hesthaven and Warburton they explain that \(\boldsymbol{g}\) is a polynomial trace function, composed of the numerical flux or the jump in flux, depending on whether we use the weak or the strong form<br></li>
 </ul>
 </div>
 </div>

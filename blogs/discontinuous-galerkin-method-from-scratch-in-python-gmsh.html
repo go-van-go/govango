@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-03-02 Sun 17:07 -->
+<!-- 2025-03-05 Wed 12:13 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - Gmsh to Numpy</title>
@@ -62,7 +62,7 @@ My goal is to create a python class that lets me take any 3D tetrahedral <code>.
 Gmsh is an <b>open source</b> 3D finite element mesh generator ran by Christophe Geuzaine out of the <i>Université de Liège</i> in Belgium [<a href="#citeproc_bib_item_1">1</a>]. It does a lot of great stuff, but what I'm mainly interested in is its ability to generate a <b>3D unstructured tetrahedral mesh</b> out of common 3D files (like <code>.stl</code> files for example). This will allow me to take MRI data of the human brain and use to produce a 3D volumetric mesh to use in a DG simulation.<br>
 </p>
 
-<div class="extra" id="org9f467e3">
+<div class="extra" id="org7a5d2f6">
 <p>
 <i>How do you turn MRI data into a .msh file?</i><br>
 </p>
@@ -85,7 +85,7 @@ For now I'm just going to focus on a 3D tetrahedral mesh.<br>
 Our goal is to create a python class called <code>Mesh</code> that can convert the data in a <code>.msh</code> file from Gmsh into numpy arrays that we can use in a DG wave simulation.<br>
 </p>
 
-<div class="extra" id="org04102c7">
+<div class="extra" id="org06a81f0">
 <p>
 Naming conventions for meshes can vary from person to person. In this cite we'll stick to the following.<br>
 </p>
@@ -126,7 +126,7 @@ We can solve the first problem using using Gmsh's python API that can return a b
 The second problem is specific to the discontinuous Galerkin method. We'll need to be able to find each cells neighbors, and which faces are adjacent.<br>
 </p>
 
-<div class="emphasis" id="org4d335aa">
+<div class="emphasis" id="orga5e5c41">
 <p>
 <i>What information do we want to extract?</i><br>
 </p>
@@ -182,7 +182,7 @@ Gmsh is a very complex tool, and we are only going to use a small subset of it. 
 We only care about a few functions from the python API.<br>
 </p>
 
-<div class="emphasis" id="org4da6583">
+<div class="emphasis" id="orgd935863">
 <p>
 <i>What is a tag in Gmsh?</i><br>
 </p>

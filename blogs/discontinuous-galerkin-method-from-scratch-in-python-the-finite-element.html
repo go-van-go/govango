@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-03-02 Sun 17:07 -->
+<!-- 2025-03-05 Wed 12:13 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DG Method From Scratch (in Python) - The Finite Element</title>
@@ -105,7 +105,7 @@ A finite element is a mathematical tool that serves as <b>building block for a n
 The rigous mathematical definition is usually taken from <i>The Mathematical Theory of Finite Element Methods</i> by Brenner and Scott [<a href="#citeproc_bib_item_1">1</a>]. Their definition expands on the classic 1978 definition from P. Ciarlet [<a href="#citeproc_bib_item_2">2</a>].<br>
 </p>
 
-<div class="emphasis" id="org8b9901c">
+<div class="emphasis" id="org731aefb">
 <p>
 A finite element is a set that contains the following three objects:<br>
 </p>
@@ -121,7 +121,7 @@ A finite element is a set that contains the following three objects:<br>
 If you are interested in their mathematical properties, you should note that <b>the degrees of freedom</b>, \(\mathcal{N}\) <b>form a basis for the dual space of P (called \(\mathcal{P'}\))</b>.<br>
 </p>
 
-<div class="extra" id="org8164d58">
+<div class="extra" id="org69b420b">
 <p>
 <i>What is the dual space of a vector space?</i><br>
 </p>
@@ -196,7 +196,7 @@ In my case, I want to simulate ultrasound waves passing through the brain. That'
 <div id="outline-container-orgd5a3878" class="outline-2">
 <h2 id="orgd5a3878">Whats a 3rd order Lagrange element?</h2>
 <div class="outline-text-2" id="text-orgd5a3878">
-<div class="emphasis" id="org7cdfffe">
+<div class="emphasis" id="org4094faa">
 <p>
 A third order, 3D Lagrange element is defined by the following triplet:<br>
 </p>
@@ -381,7 +381,7 @@ Lets build a python class callsed <code>LagrangeElement</code> for a <b>3rd orde
 As we said before, this class should contain a <b>set of points</b> (often called  the <b>degrees of freedom</b>) some <b>basis functions</b> (in this case, 3rd order Lagrange basis functions), an it should be expressed on some <b>volume</b>.<br>
 </p>
 
-<div class="emphasis" id="org383dced">
+<div class="emphasis" id="org715a4a9">
 <p>
 <i>Do I have to make a separate element for each cell in my mesh?</i><br>
 </p>

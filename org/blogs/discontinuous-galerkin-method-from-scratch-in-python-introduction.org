@@ -13,6 +13,33 @@
 #+END_QUOTE
 
 * Introduction
+* Hyperbolic PDEs
+- 1D hyperbolic system
+\begin{equation*}
+
+\end{equation*}
+
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} + \mathcal{A} \frac{\partial \mathbf{u}}{\partial x}  = 0
+\end{equation*}
+
+Where $\mathcal{A}$ is diagonalizable.
+
+- 2D hyperbolic system
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} + \mathcal{A}_x \frac{\partial \mathbf{u}}{\partial x} +  \mathcal{A}_y \frac{\partial \mathbf{u}}{\partial y}  = 0
+\end{equation*}
+
+- scalar conservation law in 1D
+\begin{equation*}
+\frac{\partial u}{\partial t} + \frac{\partial f(u)}{\partial x} = 0
+\end{equation*}
+
+- 3D conservation law
+\begin{equation*}
+\frac{\partial \mathbf{u}}{\partial t} = \nabla \cdot F(\mathbf{u}) = \frac{\partial F(\mathbf{u})}{\partial x} + \frac{\partial F(\mathbf{u})}{\partial y} + \frac{\partial F(\mathbf{u})}{\partial z} 
+\end{equation*}
+
 
 * Examples of data structures on a simple mesh
 For reference, below are some examples of the matrix data structures used in the algorithm developed in this series of articles. 
@@ -37,6 +64,7 @@ array([[0, 1, 3, 4],
 
 ** ~cell_to_cells(number_of_cells, faces_per_cell)~
 - ~cell_to_cell[i,j]~ - the global cell number of the cell that touches the /jth/ face of cell /i/.
+- If I have a ~cell~ and a ~face~ of that cell, then I can find the adjacent cell like this, ~adjacent_cell = cell_to_cell[cell, face]~
 #+BEGIN_SRC python
 array([[0, 0, 4, 0],
        [1, 1, 1, 4],
@@ -47,6 +75,7 @@ array([[0, 0, 4, 0],
 
 ** ~cell_to_faces(number_of_cells, faces_per_cell)~
 - ~cell_to_face[i,j]~ - the local face number of the cell that touches cell /i/ on it's /jth/ face.
+- If I have a ~cell~ and a ~face~ of that cell, then I can find the corresponding face of the adjacent cell like this, ~adjacent_face = cell_to_face[cell, face]~
 - This can be used together with ~cell_to_cell~ to identify which faces of which cells are adjacent.
 #+BEGIN_SRC python
 array([[0, 1, 3, 3],
